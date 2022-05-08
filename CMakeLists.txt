@@ -3,4 +3,4 @@ project(Pinquiry)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Pinquiry src/monitor-service/main.cpp)
+add_executable(Pinquiry src/monitor-service/main.cpp src/monitor-service/include/httplib.h)
