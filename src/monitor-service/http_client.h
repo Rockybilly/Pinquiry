@@ -34,7 +34,7 @@ public:
 private:
     httplib::Client* acquire_client();
     void release_client(httplib::Client* cli);
-    std::string get_certificate();
+    static std::string get_certificate();
     static std::string get_error_message_httplib(httplib::Error result);
 
     std::string cert_location;

@@ -125,7 +125,6 @@ std::string HttpClient::get_error_message_httplib(httplib::Error result){
 }
 
 std::string HttpClient::get_certificate(){
-    static bool loc_printed = false;
     std::string result;
     static const std::vector<std::string> possible_files = {
             "/etc/ssl/certs/ca-certificates.crt",                // Debian/Ubuntu/Gentoo etc.
@@ -143,10 +142,6 @@ std::string HttpClient::get_certificate(){
     }
 
     if(!result.empty()){
-        if(!loc_printed){
-            loc_printed = true;
-            std::cout << result << std::endl;
-        }
         return result;
     }
     else{
