@@ -9,14 +9,13 @@
 #include <string>
 #include "include/httplib.h"
 
-class MonitorWatcher;
-
-class BackendConnector{
+class BackendReceiver{
     std::string backend_ip;
     int backend_port = 0;
-    MonitorWatcher* watcher = nullptr;
+    void receiver_thread();
 public:
-    BackendConnector(MonitorWatcher* watcher_pt, std::string ip, int port);
+    BackendReceiver(std::string ip, int port);
+    void start_listen();
 };
 
 #endif //PINQUIRY_BACKEND_RECEIVER_H

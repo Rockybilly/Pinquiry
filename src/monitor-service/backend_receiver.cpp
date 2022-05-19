@@ -6,6 +6,6 @@
 
 #include "monitor_watcher.h"
 
-BackendConnector::BackendConnector(MonitorWatcher* watcher_pt, std::string ip, int port) : watcher(watcher_pt), backend_ip(std::move(ip)), backend_port(port){
+BackendReceiver::BackendReceiver(std::string ip, int port) : backend_ip(std::move(ip)), backend_port(port){
 
 }

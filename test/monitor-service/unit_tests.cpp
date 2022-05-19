@@ -32,7 +32,7 @@ public:
 
 testing::Environment* const env = testing::AddGlobalTestEnvironment(new ServerEnvironment);
 
-/*
+
 TEST(HttpClientTest, GetRequest) {
     HttpClient cli("127.0.0.1:9999", 100, 1);
     for (int i = 0; i < 500; i++) {
@@ -44,7 +44,7 @@ TEST(HttpClientTest, GetRequest) {
         auto r = cli.get("/hi2");
         EXPECT_EQ(r.status_code, 404) << r.error_message;
     }
-}*/
+}
 
 TEST(HttpClientMultipleTest, GetRequest) {
     HttpClient cli("127.0.0.1:9999", 100, 8);

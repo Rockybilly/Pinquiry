@@ -16,12 +16,16 @@ struct MonitorConnInfo {
 
 class MonitorObject{
 
+    std::string mon_id;
     MonitorConnInfo mon;
 
     // For CONTENT type monitor;
     std::vector<MonitorConnInfo> mons;
 
 public:
+    struct Hash { std::size_t operator()(const MonitorObject& mo) const { return std::hash<std::string>{}(mo.mon_id); } };
+    struct Equal { bool operator()(const MonitorObject&mo1, const MonitorObject&mo2) const { return mo1.mon_id == mo2.mon_id; } };
+
     typedef enum {
         HTTP,
         TCP, // Ping
@@ -32,5 +36,6 @@ public:
 
     }
 };
+
 
 #endif //PINQUIRY_MONITOR_OBJECT_H
