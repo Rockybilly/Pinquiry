@@ -9,6 +9,7 @@
 
 #include "backend_receiver.h"
 #include "monitor_object.h"
+#include <vector>
 
 class MonitorWatcher{
 
@@ -16,7 +17,7 @@ class MonitorWatcher{
 
 public:
     MonitorWatcher();
-    void add_monitors_begin(const std::vector& mons);
+    void add_monitors_begin(const std::vector<MonitorObject>& mons);
     void add_monitor(const MonitorObject& mon);
     void remove_monitor(const std::string& mon_id);
 };

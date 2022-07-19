@@ -10,10 +10,11 @@
 
 struct MonitorResult{
     uint16_t response_time_ms;
-
+    // timestamp
     uint8_t http_code;
     std::string error_str;
 
+    bool response_header_success;
     bool success;
 };
 

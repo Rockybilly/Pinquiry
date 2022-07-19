@@ -8,7 +8,7 @@ MonitorWatcher::MonitorWatcher(){
 
 }
 
-void MonitorWatcher::add_monitors_begin(const std::vector& mons){
+void MonitorWatcher::add_monitors_begin(const std::vector<MonitorObject>& mons){
     for(auto const& mon : mons){
         monitors.insert(mon);
     }
