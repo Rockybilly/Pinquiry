@@ -5,7 +5,6 @@
 #ifndef PINQUIRY_BACKEND_RECEIVER_H
 #define PINQUIRY_BACKEND_RECEIVER_H
 
-
 #include <string>
 #include "include/httplib.h"
 

@@ -3,6 +3,7 @@
 //
 
 #include "backend_client.h"
+#include "include/rapidjson/document.h"
 
 BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 1, 8){
 
@@ -23,6 +24,8 @@ std::vector<MonitorObject> BackendClient::get_monitors(){
             std::cerr << "Could not get monitors from the backend." << std::endl;
         }
         else if (!res.body.empty()){
+            rapidjson::Document document;
+            document.Parse(res.body.c_str());
 
         }
     }
