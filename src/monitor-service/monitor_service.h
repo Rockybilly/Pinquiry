@@ -18,8 +18,10 @@ class MonitorService{
     BackendClient backend_client;
 
 public:
-
     MonitorService(const std::string& ip, int port);
+    std::pair<bool, std::string> add_monitor(const MonitorObject& mo);
+    std::pair<bool, std::string> remove_monitor(const MonitorObject& mo);
+    std::pair<bool, std::string> update_monitor(const MonitorObject& mo);
 };
 
 #endif //PINQUIRY_MONITOR_SERVICE_H

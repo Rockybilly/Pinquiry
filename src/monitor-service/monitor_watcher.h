@@ -6,8 +6,6 @@
 #define PINQUIRY_MONITOR_WATCHER_H
 
 #include <unordered_set>
-
-#include "backend_receiver.h"
 #include "monitor_object.h"
 #include <vector>
 
