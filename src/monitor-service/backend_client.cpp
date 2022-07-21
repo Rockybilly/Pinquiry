@@ -20,9 +20,11 @@ std::vector<MonitorObject> BackendClient::get_monitors(){
     while (status_code != 200){
         auto res = backend_cli.get("/get_monitors");
         status_code = res.status_code;
+
         if(status_code != 200){
             std::cerr << "Could not get monitors from the backend." << std::endl;
         }
+
         else if (!res.body.empty()){
             rapidjson::Document document;
             document.Parse(res.body.c_str());
