@@ -10,17 +10,19 @@
 #include <map>
 
 struct MonitorConnInfo {
-    std::string protocol_server;
+    std::string protocol;
+    std::string server;
     std::string uri;
     int monitor_port = 0;
     std::map<std::string, std::string> request_headers;
+    uint8_t timeout_s = 3;
 };
 
 class MonitorObject{
 public:
     enum class Type{
         HTTP,
-        TCP, // Ping
+        PING,
         CONTENT
     };
     Type mon_type;

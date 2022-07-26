@@ -15,10 +15,8 @@
 #include <atomic>
 #include <thread>
 #include <functional>
-
-uint64_t get_epoch_ms(){
-    return duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-}
+#include "http_client.h"
+#include "ping_client.h"
 
 struct WatcherThread{
 
@@ -28,48 +26,11 @@ struct WatcherThread{
     std::function<void(MonitorResult&)> report_result;
     const MonitorObject mon;
 
-    explicit WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult&)> report_result_handler) : mon(std::move(mon_obj)), report_result(std::move(report_result_handler)){
-
-    }
-
-    void watch_ping(){
-        while (!stop){
-            uint64_t time_begin = get_epoch_ms();
-
-        }
-
-        stopped = true;
-    }
-
-    void watch_http(){
-        while (!stop){
-            uint64_t time_begin = get_epoch_ms();
-
-        }
-
-        stopped = true;
-    }
-
-    void watch_content(){
-        while (!stop){
-            uint64_t time_begin = get_epoch_ms();
-
-        }
-        stopped = true;
-    }
-
-    void watch(){
-        if(mon.mon_type == MonitorObject::Type::TCP){
-            th = std::thread(&WatcherThread::watch_ping, this);
-        }
-        else if(mon.mon_type == MonitorObject::Type::HTTP){
-            th = std::thread(&WatcherThread::watch_http, this);
-        }
-        else if(mon.mon_type == MonitorObject::Type::CONTENT){
-            th = std::thread(&WatcherThread::watch_content, this);
-        }
-    }
-
+    explicit WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult&)> report_result_handler);
+    void watch_ping();
+    void watch_http();
+    void watch_content();
+    void watch();
 };
 
 class MonitorWatcher{

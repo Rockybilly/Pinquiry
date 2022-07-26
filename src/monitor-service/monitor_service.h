@@ -19,6 +19,7 @@ class MonitorService{
 
 public:
     MonitorService(const std::string& ip, int port);
+    void begin_service();
     std::pair<bool, std::string> add_monitor(const MonitorObject& mo);
     std::pair<bool, std::string> remove_monitor(const MonitorObject& mo);
     std::pair<bool, std::string> update_monitor(const MonitorObject& mo);

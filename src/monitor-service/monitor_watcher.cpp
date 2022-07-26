@@ -4,6 +4,58 @@
 
 #include "monitor_watcher.h"
 
+static uint64_t get_epoch_ms(){
+    return duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+/// Watcher Thread
+
+WatcherThread::WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult&)> report_result_handler) : mon(std::move(mon_obj)), report_result(std::move(report_result_handler)){
+
+}
+
+void WatcherThread::watch_ping(){
+    PingClient pc(mon.moncon.server, mon.moncon.timeout_s);
+
+    while (!stop){
+        uint64_t time_begin = get_epoch_ms();
+
+        pc.send_ping();
+    }
+
+    stopped = true;
+}
+
+void WatcherThread::watch_http(){
+    while (!stop){
+        uint64_t time_begin = get_epoch_ms();
+
+    }
+
+    stopped = true;
+}
+
+void WatcherThread::watch_content(){
+    while (!stop){
+        uint64_t time_begin = get_epoch_ms();
+    }
+    stopped = true;
+}
+
+void WatcherThread::watch(){
+    if(mon.mon_type == MonitorObject::Type::PING){
+        th = std::thread(&WatcherThread::watch_ping, this);
+    }
+    else if(mon.mon_type == MonitorObject::Type::HTTP){
+        th = std::thread(&WatcherThread::watch_http, this);
+    }
+    else if(mon.mon_type == MonitorObject::Type::CONTENT){
+        th = std::thread(&WatcherThread::watch_content, this);
+    }
+}
+
+/// Monitor Watcher
+
 MonitorWatcher::MonitorWatcher() = default;
 
 void MonitorWatcher::add_monitors_begin(const std::vector<MonitorObject>& mons){
@@ -77,3 +129,4 @@ std::vector<MonitorResult> MonitorWatcher::get_results(){
 
     return values;
 }
+

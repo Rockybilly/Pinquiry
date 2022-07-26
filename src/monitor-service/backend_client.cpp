@@ -9,7 +9,7 @@ BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip +
 
 }
 
-void BackendClient::report_single_result(MonitorObject& mon_obj, MonitorResult& mon_res){
+void BackendClient::report_results(MonitorObject& mon_obj, MonitorResult& mon_res){
 
 }
 

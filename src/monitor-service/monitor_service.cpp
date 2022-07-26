@@ -10,7 +10,12 @@ MonitorService::MonitorService(const std::string& ip, int port) :
                      [this](const MonitorObject& mo) -> OpResult { return remove_monitor(mo);},
                      [this](const MonitorObject& mo) -> OpResult { return update_monitor(mo);}),
                                        backend_client(ip, port){
+
+}
+
+void MonitorService::begin_service(){
     watcher.add_monitors_begin(backend_client.get_monitors());
+    watcher.begin_watch();
 }
 
 std::pair<bool, std::string> MonitorService::add_monitor(const MonitorObject& mo){

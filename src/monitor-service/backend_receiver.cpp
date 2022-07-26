@@ -11,7 +11,7 @@ BackendReceiver::BackendReceiver(std::string ip,
                                  : backend_ip(std::move(ip)){
 
     svr.Post( "/add_monitor", [&](const httplib::Request& req, httplib::Response& res) {
-        req.remote_addr;
+
     });
 
     svr.Post( "/remove_monitor", [&](const httplib::Request& req, httplib::Response& res) {

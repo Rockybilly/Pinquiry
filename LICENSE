@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Rockybilly
+Copyright (c) 2022 Ata YARDIMCI / Ezgi YILMAZ
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,7 @@ SOFTWARE.
 Libraries Used:
 
 cpp-httplib / Copyright (c) 2017 yhirose
-
-
-
+gtest
 
 Copyright 2008, Google Inc.
 All rights reserved.
