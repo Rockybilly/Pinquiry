@@ -23,10 +23,10 @@ struct WatcherThread{
     std::atomic<bool> stop = false;
     std::atomic<bool> stopped = false;
     std::thread th;
-    std::function<void(MonitorResult&)> report_result;
+    std::function<void(MonitorResult*)> report_result;
     const MonitorObject mon;
 
-    explicit WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult&)> report_result_handler);
+    explicit WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult*)> report_result_handler);
     void watch_ping();
     void watch_http();
     void watch_content();
@@ -37,10 +37,10 @@ class MonitorWatcher{
 
     std::set<WatcherThread*> delete_wt_set;
     std::unordered_map<std::string, WatcherThread*> watcher_threads;
-    std::vector<MonitorResult> results;
+    std::vector<MonitorResult*> results;
     std::mutex results_mutex;
     std::mutex watches_map_mutex;
-    void add_result(const MonitorResult& res);
+    void add_result(MonitorResult* res);
 public:
     MonitorWatcher();
     void add_monitors_begin(const std::vector<MonitorObject>& mons);
@@ -49,7 +49,7 @@ public:
     void remove_monitor(const std::string& mon_id);
     void update_monitor(const MonitorObject& mon);
 
-    std::vector<MonitorResult> get_results();
+    std::vector<MonitorResult*> get_results();
 
 };
 

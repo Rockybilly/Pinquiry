@@ -5,31 +5,20 @@
 #include "http_client.h"
 #include <filesystem>
 
-HttpClient::HttpClient(const std::string &server, int timeout_ms, int connection_count) : server_name(server), queue_sem(connection_count){
+HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(server){
 
     if(cert_location.empty()){
         cert_location = get_certificate();
     }
-    this->connection_count = connection_count;
 
-    if(connection_count == 1){
-        if (client == nullptr){
-            client = new httplib::Client(server);
-            client->set_ca_cert_path(cert_location.c_str());
-            client->set_read_timeout(0, timeout_ms * 1000);
-            client->set_keep_alive(true);
-        }
+    if (client == nullptr){
+        client = new httplib::Client(server);
+        client->set_ca_cert_path(cert_location.c_str());
+        client->set_read_timeout(0, timeout_ms * 1000);
+        client->set_keep_alive(true);
     }
-    else{
-        for(int i = 0; i < connection_count; i++){
-            auto* cli = new httplib::Client(server);
-            cli->set_ca_cert_path(cert_location.c_str());
-            cli->set_read_timeout(0, timeout_ms * 1000);
-            cli->set_keep_alive(true);
-            connection_queue.push(cli);
-            //queue_sem.release();
-        }
-    }
+
+
 }
 
 HttpClient::~HttpClient(){
@@ -45,22 +34,27 @@ HttpClient::Response HttpClient::get(const std::string &uri,
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto cli = acquire_client();
-    auto res = cli->Get(uri.c_str(), hs);
-    release_client(cli);
+    auto res = client->Get(uri.c_str(), hs);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>((t2 - t1)).count();
 
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>((t1.time_since_epoch())).count();
+
     if(res){
+        std::vector<std::pair<std::string, std::string>> res_headers;
+        for(const auto& [k, v] : res->headers){
+            res_headers.emplace_back(k, v);
+        }
+
         if (res->status == 200){
-            return {200, std::string(res->body), "", elapsed};
+            return {timestamp, 200, std::string(res->body), "", elapsed, res_headers};
         }
         else{
-            return {res->status, "", "HTTP " + std::to_string(res->status), elapsed};
+            return {timestamp, res->status, "", "HTTP " + std::to_string(res->status), elapsed, res_headers};
         }
     }
     else{
-        return {0, "", get_error_message_httplib(res.error()), elapsed};
+        return {timestamp, 0, "", get_error_message_httplib(res.error()), elapsed, {}};
     }
 }
 
@@ -72,22 +66,27 @@ HttpClient::Response HttpClient::head(const std::string &uri, const std::multima
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto cli = acquire_client();
-    auto res = cli->Head(uri.c_str(), hs);
-    release_client(cli);
+    auto res = client->Head(uri.c_str(), hs);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>((t2 - t1)).count();
 
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>((t1.time_since_epoch())).count();
+
     if(res){
+        std::vector<std::pair<std::string, std::string>> res_headers;
+        for(const auto& [k, v] : res->headers){
+            res_headers.emplace_back(k, v);
+        }
+
         if (res->status == 200){
-            return {200, "", "", elapsed};
+            return {timestamp, 200, "", "", elapsed, res_headers};
         }
         else{
-            return {res->status, "", "HTTP " + std::to_string(res->status), elapsed};
+            return {timestamp, res->status, "", "HTTP " + std::to_string(res->status), elapsed, res_headers};
         }
     }
     else{
-        return {0, "", get_error_message_httplib(res.error()), elapsed};
+        return {timestamp, 0, "", get_error_message_httplib(res.error()), elapsed, {}};
     }
 }
 
@@ -146,31 +145,5 @@ std::string HttpClient::get_certificate(){
     }
     else{
         throw std::string("Could not find a SSL certificate");
-    }
-}
-
-httplib::Client* HttpClient::acquire_client(){
-    if(connection_count == 1){
-        return client;
-    }
-    else{
-        queue_sem.acquire();
-
-        queue_mutex.lock();
-        auto i = connection_queue.front();
-        //std::cout << connection_queue.size() << " " << i << std::endl;
-        connection_queue.pop();
-        queue_mutex.unlock();
-        return i;
-    }
-}
-
-void HttpClient::release_client(httplib::Client* cli){
-    if(connection_count > 1){
-        queue_mutex.lock();
-        connection_queue.push(cli);
-        queue_mutex.unlock();
-
-        queue_sem.release();
     }
 }

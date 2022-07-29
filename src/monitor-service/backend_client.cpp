@@ -4,8 +4,9 @@
 
 #include "backend_client.h"
 #include "include/rapidjson/document.h"
+#include "json_handler.h"
 
-BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 1, 8){
+BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 1){
 
 }
 
@@ -25,13 +26,21 @@ std::vector<MonitorObject> BackendClient::get_monitors(){
             std::cerr << "Could not get monitors from the backend." << std::endl;
         }
         else if (res.body.empty()){
+            std::cerr << "Backend get_monitors result shouldn't be empty." << std::endl;
         }
         else{
-            rapidjson::Document document;
-            document.Parse(res.body.c_str());
+            auto [mon_vector, error_string] = json_parse_multiple_monitors(res.body);
+            if (!error_string.empty()){
+                std::cerr << "JSON ERROR: " << error_string << std::endl;
+            }
+            else{
+                return mon_vector;
+            }
+
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-    return result;
+
+    return {};
 }

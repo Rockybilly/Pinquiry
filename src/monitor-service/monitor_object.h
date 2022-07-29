@@ -8,14 +8,16 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 struct MonitorConnInfo {
     std::string protocol;
     std::string server;
     std::string uri;
-    int monitor_port = 0;
-    std::map<std::string, std::string> request_headers;
+    int port = 0;
+    std::multimap<std::string, std::string> request_headers;
     uint8_t timeout_s = 3;
+    uint8_t interval_s = 5;
 };
 
 class MonitorObject{
@@ -28,14 +30,13 @@ public:
     Type mon_type;
     std::string mon_id;
 
-
     MonitorConnInfo moncon;
 
     // For CONTENT type monitor;
     std::vector<MonitorConnInfo> mons;
 
-    std::map<std::string, std::string> response_success_headers;
-    std::vector<int> success_codes;
+    std::vector<std::pair<std::string, std::string>> response_success_headers;
+    std::set<int> success_codes;
 
     struct Hash { std::size_t operator()(const MonitorObject& mo) const { return std::hash<std::string>{}(mo.mon_id); } };
     struct Equal { bool operator()(const MonitorObject&mo1, const MonitorObject&mo2) const { return mo1.mon_id == mo2.mon_id; } };

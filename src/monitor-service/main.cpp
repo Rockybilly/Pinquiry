@@ -8,5 +8,7 @@ int main() {
     logger.initialize("/var/log/pinquiry_monitor_service/general.log");
     MonitorService ms("127.0.0.1", 3333);
     ms.begin_service();
+
+
     return 0;
 }

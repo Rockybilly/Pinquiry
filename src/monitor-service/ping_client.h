@@ -20,7 +20,7 @@ constexpr uint8_t ping_pkt_size = 32;
 
 class PingClient{
 public:
-    explicit PingClient(std::string in_server, uint8_t in_ping_recv_timeout_s);
+    PingClient(std::string in_server, uint8_t in_ping_recv_timeout_s);
 
     struct PingResult{
         uint64_t response_time_ms;
