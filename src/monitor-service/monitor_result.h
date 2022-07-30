@@ -31,6 +31,7 @@ struct HTTPResult : MonitorResult{
 
     bool response_header_success;
     bool status_code_success;
+    bool search_string_success;
 
     // In case of error
     std::string error_str;

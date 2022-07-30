@@ -66,13 +66,11 @@ std::string json_parse_into_mon_http(const JsonObject& json_obj, MonitorObject& 
             mon_obj.moncon.request_headers.insert({it->name.GetString(), it->value.GetString()});
         }
     }
-    else{
-        return "Error, expected request_headers item.";
-    }
+
 
     if(json_obj.HasMember("success_codes") && json_obj["success_codes"].IsArray()){
         for(auto& code : json_obj["success_codes"].GetArray()) {
-            if (code.IsInt()) return "Error, expected int value for success_codes members.";
+            if (!code.IsInt()) return "Error, expected int value for success_codes members.";
             mon_obj.success_codes.insert(code.GetInt());
         }
     }
@@ -85,9 +83,6 @@ std::string json_parse_into_mon_http(const JsonObject& json_obj, MonitorObject& 
             if (!it->name.IsString() || !it->value.IsString()) return "Error, expected string value for success_headers members.";
             mon_obj.response_success_headers.emplace_back(it->name.GetString(), it->value.GetString());
         }
-    }
-    else{
-        return "Error, expected success_headers item.";
     }
 
     if(json_obj.HasMember("timeout_s") && json_obj["timeout_s"].IsInt()){
@@ -102,6 +97,10 @@ std::string json_parse_into_mon_http(const JsonObject& json_obj, MonitorObject& 
     }
     else{
         return "Error, expected interval_s item.";
+    }
+
+    if(json_obj.HasMember("search_string") && json_obj["search_string"].IsString()){
+        mon_obj.search_string = json_obj["search_string"].GetString();
     }
 
     return "";
@@ -119,7 +118,6 @@ std::pair<std::vector<MonitorObject>, std::string> json_parse_multiple_monitors(
     if (d.Parse<0>( body.c_str() ).HasParseError() ){
         return {{}, "JSON parsing error."};
     }
-
 
     if (d.HasMember("monitors_list") && d["monitors_list"].IsArray()){
         for(auto& mon : d["monitors_list"].GetArray()){
@@ -198,9 +196,65 @@ std::string json_parse_monitor(const JsonObject& json_obj, MonitorObject& mon_ob
         return "Error, expected mon_id item.";
     }
 
+    return "";
 
 
 }
+
+JsonObject json_create_ping_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator){
+    auto* rc = (PingResult*) result;
+    rapidjson::Value res_obj;
+    res_obj.SetObject();
+
+    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
+    res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
+
+    res_obj.AddMember("error_str", rapidjson::StringRef(rc->error_str.c_str()), allocator);
+
+    return res_obj;
+}
+
+JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator){
+    auto* rc = (HTTPResult*) result;
+    rapidjson::Value res_obj;
+    res_obj.SetObject();
+
+    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
+    res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
+    res_obj.AddMember("status_code", rc->status_code, allocator);
+    res_obj.AddMember("status_code_success", rc->status_code_success, allocator);
+    res_obj.AddMember("response_header_success", rc->response_header_success, allocator);
+    res_obj.AddMember("search_string_success", rc->search_string_success, allocator);
+    res_obj.AddMember("error_str", rapidjson::StringRef(rc->error_str.c_str()), allocator);
+
+    return res_obj;
+}
+
+JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator){
+    auto* rc = (ContentResult*) result;
+    rapidjson::Value res_obj;
+    res_obj.SetObject();
+
+    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
+
+
+    return res_obj;
+}
+
+JsonObject json_create_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator){
+    switch (result->mon_type){
+        case MonitorObject::Type::PING:
+            return json_create_ping_result(result, allocator);
+        case MonitorObject::Type::HTTP:
+            return json_create_http_result(result, allocator);
+        case MonitorObject::Type::CONTENT:
+            return json_create_content_result(result, allocator);
+    }
+}
+
 std::string json_create_multiple_results(const std::vector<MonitorResult*>& results){
     rapidjson::Document d;
     d.SetObject();
@@ -209,19 +263,7 @@ std::string json_create_multiple_results(const std::vector<MonitorResult*>& resu
     rapidjson::Value results_array(rapidjson::kArrayType);
 
     for(auto const& r : results){
-        auto* rc = (HTTPResult*) r;
-        rapidjson::Value res_obj;
-        res_obj.SetObject();
-
-        res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
-        res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
-        res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
-        res_obj.AddMember("status_code", rc->status_code, allocator);
-        res_obj.AddMember("status_code_success", rc->status_code_success, allocator);
-        res_obj.AddMember("response_header_success", rc->response_header_success, allocator);
-        res_obj.AddMember("error_str", rapidjson::StringRef(rc->error_str.c_str()), allocator);
-
-        results_array.PushBack(res_obj, allocator);
+        results_array.PushBack(json_create_result(r, allocator), allocator);
     }
 
     d.AddMember("results", results_array, allocator);

@@ -36,7 +36,15 @@ void WatcherThread::watch_http(){
 
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
-        auto res = cli.get(mon.moncon.uri, mon.moncon.request_headers);
+        HttpClient::Response res;
+
+        if (mon.search_string.empty()){
+            res = cli.head(mon.moncon.uri, mon.moncon.request_headers);
+        }
+        else{
+            res = cli.get(mon.moncon.uri, mon.moncon.request_headers);
+        }
+
 
         auto* result = new HTTPResult();
 
@@ -51,6 +59,12 @@ void WatcherThread::watch_http(){
         }
         else{
             result->status_code_success = false;
+            if(res.status_code == 0){
+                result->error_str += "Error: " + res.error_message;
+            }
+            else if(res.status_code != 0){
+                result->error_str += res.error_message;
+            }
         }
 
         result->response_header_success = true;
@@ -59,6 +73,19 @@ void WatcherThread::watch_http(){
             if (std::find(res.response_headers.begin(), res.response_headers.end(), h) == res.response_headers.end()){
                 result->response_header_success = false;
                 result->error_str += "Response header: " + h.first + ", value: " + h.second + " not found\n";
+            }
+        }
+
+        if (mon.search_string.empty()){
+            result->search_string_success = true;
+        }
+        else{
+            if(res.body.find(mon.search_string) == std::string::npos){
+                result->search_string_success = false;
+                result->error_str += "Search string not found in response body\n";
+            }
+            else{
+                result->search_string_success = true;
             }
         }
 

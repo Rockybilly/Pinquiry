@@ -32,11 +32,14 @@ public:
 
     MonitorConnInfo moncon;
 
+    // For HTTP type monitor
+    std::string search_string;
+    std::vector<std::pair<std::string, std::string>> response_success_headers;
+    std::set<int> success_codes;
+
     // For CONTENT type monitor;
     std::vector<MonitorConnInfo> mons;
 
-    std::vector<std::pair<std::string, std::string>> response_success_headers;
-    std::set<int> success_codes;
 
     struct Hash { std::size_t operator()(const MonitorObject& mo) const { return std::hash<std::string>{}(mo.mon_id); } };
     struct Equal { bool operator()(const MonitorObject&mo1, const MonitorObject&mo2) const { return mo1.mon_id == mo2.mon_id; } };
@@ -45,6 +48,8 @@ public:
 
     }
 };
+
+
 
 
 #endif //PINQUIRY_MONITOR_OBJECT_H
