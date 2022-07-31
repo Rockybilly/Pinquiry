@@ -16,6 +16,7 @@ HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(
         client->set_ca_cert_path(cert_location.c_str());
         client->set_read_timeout(0, timeout_ms * 1000);
         client->set_keep_alive(true);
+        client->
     }
 
 

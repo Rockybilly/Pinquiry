@@ -27,7 +27,10 @@ std::pair<MonitorObject, std::string> json_parse_monitor(const std::string& body
 
 std::string json_parse_monitor(const JsonObject& json_obj, MonitorObject& mon_obj);
 
+JsonObject json_create_ping_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator);
+JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator);
+JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator);
+JsonObject json_create_result(const MonitorResult* result, rapidjson::Document::AllocatorType& allocator);
 std::string json_create_multiple_results(const std::vector<MonitorResult*>& results);
-
 
 #endif //PINQUIRY_JSON_HANDLER_H
