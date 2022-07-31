@@ -45,9 +45,9 @@ public:
     MonitorWatcher();
     void add_monitors_begin(const std::vector<MonitorObject>& mons);
     void begin_watch();
-    void add_monitor(const MonitorObject& mon);
-    void remove_monitor(const std::string& mon_id);
-    void update_monitor(const MonitorObject& mon);
+    ErrorString add_monitor(const MonitorObject& mon);
+    ErrorString remove_monitor(const std::string& mon_id);
+    ErrorString update_monitor(const MonitorObject& mon);
 
     std::vector<MonitorResult*> get_results();
 

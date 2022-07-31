@@ -20,9 +20,9 @@ class MonitorService{
 public:
     MonitorService(const std::string& ip, int port);
     [[noreturn]] void begin_service();
-    std::pair<bool, std::string> add_monitor(const MonitorObject& mo);
-    std::pair<bool, std::string> remove_monitor(const MonitorObject& mo);
-    std::pair<bool, std::string> update_monitor(const MonitorObject& mo);
+    ErrorString add_monitor(const MonitorObject& mo);
+    ErrorString remove_monitor(const std::string& mon_id);
+    ErrorString update_monitor(const MonitorObject& mo);
 };
 
 #endif //PINQUIRY_MONITOR_SERVICE_H

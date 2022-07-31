@@ -15,8 +15,9 @@
 class HttpClient{
 public:
     HttpClient() = delete;
+    HttpClient(const HttpClient&) = delete;
+    HttpClient(HttpClient&&) = default;
     HttpClient(const std::string& server, int req_timeout_ms);
-    ~HttpClient();
 
     struct Response{
         uint64_t timestamp_ms;
@@ -33,6 +34,9 @@ public:
     Response head(const std::string& uri,
                   const std::multimap<std::string, std::string>& headers = {});
 
+    std::string get_ip();
+    static std::string get_ip_from_socket(int sock);
+
 private:
     static std::string get_certificate();
     static std::string get_error_message_httplib(httplib::Error result);
@@ -40,7 +44,7 @@ private:
     std::string cert_location;
     std::string server_name;
 
-    httplib::Client* client = nullptr;
+    std::unique_ptr<httplib::Client> client = nullptr;
 };
 
 #endif //PINQUIRY_HTTP_CLIENT_H

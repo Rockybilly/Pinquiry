@@ -32,7 +32,7 @@ void WatcherThread::watch_ping(){
 }
 
 void WatcherThread::watch_http(){
-    HttpClient cli(mon.moncon.protocol + "://" + mon.moncon.server, mon.moncon.timeout_s * 1000);
+    HttpClient cli(mon.moncon.protocol + "://" + mon.moncon.server + ':' + std::to_string(mon.moncon.port), mon.moncon.timeout_s * 1000);
 
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
@@ -51,6 +51,7 @@ void WatcherThread::watch_http(){
         result->response_time_ms = res.response_time_ms;
         result->status_code = res.status_code;
         result->timestamp_ms = res.timestamp_ms;
+        result->server_ip = cli.get_ip();
         result->mon_id = mon.mon_id;
         result->mon_type = mon.mon_type;
 
@@ -90,7 +91,7 @@ void WatcherThread::watch_http(){
         }
 
         if(!result->error_str.empty()){
-            result->response_headers = res.response_headers;
+            result->response_headers = std::move(res.response_headers);
         }
 
         report_result(static_cast<MonitorResult*>(result));
@@ -103,9 +104,75 @@ void WatcherThread::watch_http(){
 }
 
 void WatcherThread::watch_content(){
+    std::vector<HttpClient> clients;
+
+    for(auto const& moncon : mon.moncons){
+
+        clients.emplace_back(moncon.protocol + "://" + moncon.server + ':' + std::to_string(moncon.port), moncon.timeout_s * 1000);
+    }
+
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
+
+        std::vector<HttpClient::Response> responses;
+
+        for(int i = 0; i < clients.size(); i++){
+            HttpClient::Response res;
+
+            res = clients[i].get(mon.moncons[i].uri, mon.moncons[i].request_headers);
+            responses.push_back(std::move(res));
+        }
+
+        auto* result = new ContentResult();
+
+        result->mon_id = mon.mon_id;
+        result->mon_type = mon.mon_type;
+
+        std::vector<std::vector<std::string>> groups_bodies;
+        std::vector<std::vector<ContentResult::SingleResult>> groups;
+
+        for(int i = 0; i < responses.size(); i++){
+            ContentResult::SingleResult sr{};
+            auto& r = responses[i];
+
+            sr.response_time_ms = r.response_time_ms;
+            sr.status_code = r.status_code;
+            sr.timestamp_ms = r.timestamp_ms;
+
+            sr.response_headers = std::move(r.response_headers);
+            sr.url = mon.moncons[i].protocol + "://" + mon.moncons[i].server +
+                    ':' + std::to_string(mon.moncons[i].port) + mon.moncons[i].uri;
+            sr.server_ip = clients[i].get_ip();
+            sr.body_size = r.body.size();
+
+            bool need_new_group = true;
+
+            for(int j = 0; j < groups.size(); j++){
+                if(r.body == groups_bodies[j][0]){
+                    need_new_group = false;
+                    groups_bodies[j].push_back(std::move(r.body));
+                    groups[j].push_back(std::move(sr));
+                    break;
+                }
+            }
+
+            if (need_new_group){
+                groups_bodies.push_back({std::move(r.body)});
+                groups.push_back({std::move(sr)});
+            }
+        }
+
+        result->num_of_groups = groups.size();
+        result->groups = std::move(groups);
+
+        report_result(static_cast<MonitorResult*>(result));
+
+        uint64_t time_end = get_epoch_ms();
+        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
     }
+
+
+
     stopped = true;
 }
 
@@ -138,21 +205,30 @@ void MonitorWatcher::begin_watch(){
     }
 }
 
-void MonitorWatcher::add_monitor(const MonitorObject& mon){
-    watches_map_mutex.lock();
+ErrorString MonitorWatcher::add_monitor(const MonitorObject& mon){
+    std::lock_guard<std::mutex> lock(watches_map_mutex);
 
     auto* wt_ptr = new WatcherThread(mon, [this](MonitorResult* res){add_result(res);});
-    watcher_threads.emplace(mon.mon_id, wt_ptr);
+    auto [_, inserted] = watcher_threads.emplace(mon.mon_id, wt_ptr);
 
-    watches_map_mutex.unlock();
+    if (!inserted){
+        delete wt_ptr;
+        return "Couldn't insert existing mon_id";
+    }
+
+    wt_ptr->watch();
+    return "";
 }
 
-void MonitorWatcher::remove_monitor(const std::string& mon_id){
-    watches_map_mutex.lock();
+ErrorString MonitorWatcher::remove_monitor(const std::string& mon_id){
+    std::lock_guard<std::mutex> lock(watches_map_mutex);
 
     auto got = watcher_threads.find(mon_id);
     if( got != watcher_threads.end() ){
         got->second->stop = true;
+    }
+    else{
+        return "mon_id not found.";
     }
 
     delete_wt_set.insert(got->second);
@@ -174,25 +250,62 @@ void MonitorWatcher::remove_monitor(const std::string& mon_id){
         }
     }
 
-    watches_map_mutex.unlock();
+    return "";
 }
 
-void MonitorWatcher::update_monitor(const MonitorObject &mon){
-    remove_monitor(mon.mon_id);
-    add_monitor(mon);
+ErrorString MonitorWatcher::update_monitor(const MonitorObject &mon){
+    std::lock_guard<std::mutex> lock(watches_map_mutex);
+
+    auto got = watcher_threads.find(mon.mon_id);
+    if( got != watcher_threads.end() ){
+        got->second->stop = true;
+    }
+    else{
+        return "mon_id not found.";
+    }
+
+    delete_wt_set.insert(got->second);
+    watcher_threads.erase(got);
+
+    auto it = delete_wt_set.begin();
+    for (it; it != delete_wt_set.end(); ) {
+        if ((*it)->stopped){
+            if((*it)->th.joinable()){
+                (*it)->th.join();
+            }
+            auto store_ptr = (*it);
+            it = delete_wt_set.erase(it);
+            delete store_ptr;
+
+        }
+        else {
+            ++it;
+        }
+    }
+
+    auto* wt_ptr = new WatcherThread(mon, [this](MonitorResult* res){add_result(res);});
+    auto [_, inserted] = watcher_threads.emplace(mon.mon_id, wt_ptr);
+
+    if (!inserted){
+        delete wt_ptr;
+        return "Couldn't insert existing mon_id (Shouldn't happen in update method, consult a system admin).";
+    }
+
+    wt_ptr->watch();
+
+    return "";
 }
 
 void MonitorWatcher::add_result(MonitorResult* res){
-    results_mutex.lock();
+    std::lock_guard<std::mutex> lock(results_mutex);
     results.emplace_back(res);
-    results_mutex.unlock();
 }
 
 std::vector<MonitorResult*> MonitorWatcher::get_results(){
-    results_mutex.lock();
+    std::lock_guard<std::mutex> lock(results_mutex);
+
     auto values = std::move(results);
     results.clear();
-    results_mutex.unlock();
 
     return values;
 }

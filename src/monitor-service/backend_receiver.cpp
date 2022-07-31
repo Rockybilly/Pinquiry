@@ -3,23 +3,74 @@
 //
 
 #include "backend_receiver.h"
+#include "json_handler.h"
 
 BackendReceiver::BackendReceiver(std::string ip,
-                                 const std::function< OpResult(const MonitorObject&)>& add_monitor_handler,
-                                 const std::function< OpResult(const MonitorObject&)>& remove_monitor_handler,
-                                 const std::function< OpResult(const MonitorObject&)>& update_monitor_handler)
-                                 : backend_ip(std::move(ip)){
+                                 const std::function< ErrorString(const MonitorObject&)>& add_mon_handler,
+                                 const std::function< ErrorString(const std::string&)>& remove_mon_handler,
+                                 const std::function< ErrorString(const MonitorObject&)>& update_mon_handler)
+                                 : backend_ip(std::move(ip)), add_monitor_handler(add_mon_handler),
+                                 remove_monitor_handler(remove_mon_handler),
+                                 update_monitor_handler(update_mon_handler){
 
     svr.Post( "/add_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        auto [mon, error_st] = json_parse_monitor(req.body);
 
+        if (error_st.empty()){
+            auto error_st_handler = add_monitor_handler(mon);
+
+            if (error_st_handler.empty()){
+                res.status = 200;
+            }
+            else{
+                res.status = 404;
+                res.set_content(error_st_handler, "text/plain");
+            }
+        }
+        else{
+            res.status = 404;
+            res.set_content(error_st, "text/plain");
+        }
     });
 
     svr.Post( "/remove_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        auto [mon_id, error_st] = json_parse_monitor_id(req.body);
 
+        if (error_st.empty()){
+            auto error_st_handler = remove_monitor_handler(mon_id);
+
+            if (error_st_handler.empty()){
+                res.status = 200;
+            }
+            else{
+                res.status = 404;
+                res.set_content(error_st_handler, "text/plain");
+            }
+        }
+        else{
+            res.status = 404;
+            res.set_content(error_st, "text/plain");
+        }
     });
 
     svr.Post( "/update_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        auto [mon, error_st] = json_parse_monitor(req.body);
 
+        if (error_st.empty()){
+            auto error_st_handler = update_monitor_handler(mon);
+
+            if (error_st_handler.empty()){
+                res.status = 200;
+            }
+            else{
+                res.status = 404;
+                res.set_content(error_st_handler, "text/plain");
+            }
+        }
+        else{
+            res.status = 404;
+            res.set_content(error_st, "text/plain");
+        }
     });
 }
 

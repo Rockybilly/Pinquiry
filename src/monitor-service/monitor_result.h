@@ -21,11 +21,12 @@ struct PingResult : MonitorResult{
     bool success;
 
     // In case of error
-    std::string error_str;
+    ErrorString error_str;
 };
 
 struct HTTPResult : MonitorResult{
     uint64_t timestamp_ms;
+    std::string server_ip;
     uint16_t response_time_ms;
     uint8_t status_code;
 
@@ -34,13 +35,27 @@ struct HTTPResult : MonitorResult{
     bool search_string_success;
 
     // In case of error
-    std::string error_str;
+    ErrorString error_str;
     std::vector<std::pair<std::string, std::string>> response_headers;
 };
 
+
 struct ContentResult : MonitorResult{
-    std::vector<uint64_t> timestamp_ms;
-    std::vector<std::string> error_str;
-    bool success;
+
+    uint8_t num_of_groups = 0;
+
+    struct SingleResult{
+        uint64_t timestamp_ms;
+        std::string url;
+        std::string server_ip;
+        uint16_t response_time_ms;
+        uint8_t status_code;
+        uint64_t body_size;
+
+        // In case of error
+        std::vector<std::pair<std::string, std::string>> response_headers;
+    };
+
+    std::vector<std::vector<SingleResult>> groups;
 };
 #endif //PINQUIRY_MONITOR_RESULT_H

@@ -7,15 +7,18 @@
 
 
 MonitorService::MonitorService(const std::string& ip, int port) :
-    backend_receiver(ip, [this](const MonitorObject& mo) -> OpResult { return add_monitor(mo);},
-                     [this](const MonitorObject& mo) -> OpResult { return remove_monitor(mo);},
-                     [this](const MonitorObject& mo) -> OpResult { return update_monitor(mo);}),
+    backend_receiver(ip, [this](const MonitorObject& mo) -> ErrorString { return add_monitor(mo);},
+                     [this](const std::string& mon_id) -> ErrorString { return remove_monitor(mon_id);},
+                     [this](const MonitorObject& mo) -> ErrorString { return update_monitor(mo);}),
                                        backend_client(ip, port){
 
 }
 
 void MonitorService::begin_service(){
     watcher.add_monitors_begin(backend_client.get_monitors());
+
+    backend_receiver.start_listen();
+
     watcher.begin_watch();
 
     while (true){
@@ -27,14 +30,14 @@ void MonitorService::begin_service(){
     }
 }
 
-std::pair<bool, std::string> MonitorService::add_monitor(const MonitorObject& mo){
-    return {};
+ErrorString MonitorService::add_monitor(const MonitorObject& mo){
+    return watcher.add_monitor(mo);
 }
 
-std::pair<bool, std::string> MonitorService::remove_monitor(const MonitorObject& mo){
-    return {};
+ErrorString MonitorService::remove_monitor(const std::string& mon_id){
+    return watcher.remove_monitor(mon_id);
 }
 
-std::pair<bool, std::string> MonitorService::update_monitor(const MonitorObject& mo){
-    return {};
+ErrorString MonitorService::update_monitor(const MonitorObject& mo){
+    return watcher.update_monitor(mo);
 }

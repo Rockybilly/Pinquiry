@@ -10,18 +10,21 @@
 #include "monitor_object.h"
 #include <thread>
 
-typedef std::pair<bool, std::string> OpResult;
-
 class BackendReceiver{
     httplib::Server svr;
     std::string backend_ip;
     int backend_port = 0;
+
+    const std::function< ErrorString(const MonitorObject&)> add_monitor_handler;
+    const std::function< ErrorString(const std::string&)> remove_monitor_handler;
+    const std::function< ErrorString(const MonitorObject&)> update_monitor_handler;
+
     [[noreturn]] void receiver_worker();
 public:
     BackendReceiver(std::string ip,
-                    const std::function<OpResult(const MonitorObject&)>& add_monitor_handler,
-                    const std::function<OpResult(const MonitorObject&)>& remove_monitor_handler,
-                    const std::function<OpResult(const MonitorObject&)>& update_monitor_handle);
+                    const std::function<ErrorString(const MonitorObject&)>& add_moni_handler,
+                    const std::function<ErrorString(const std::string&)>& remove_mon_handler,
+                    const std::function<ErrorString(const MonitorObject&)>& update_mon_handle);
     void start_listen();
 };
 

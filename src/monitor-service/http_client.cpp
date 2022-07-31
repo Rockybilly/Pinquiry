@@ -4,6 +4,7 @@
 
 #include "http_client.h"
 #include <filesystem>
+#include <memory>
 
 HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(server){
 
@@ -12,18 +13,11 @@ HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(
     }
 
     if (client == nullptr){
-        client = new httplib::Client(server);
-        client->set_ca_cert_path(cert_location.c_str());
+        client = std::make_unique<httplib::Client>(server);
+        client->set_ca_cert_path(cert_location);
         client->set_read_timeout(0, timeout_ms * 1000);
         client->set_keep_alive(true);
-        client->
     }
-
-
-}
-
-HttpClient::~HttpClient(){
-    delete client;
 }
 
 HttpClient::Response HttpClient::get(const std::string &uri,
@@ -35,7 +29,7 @@ HttpClient::Response HttpClient::get(const std::string &uri,
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto res = client->Get(uri.c_str(), hs);
+    auto res = client->Get(uri, hs);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>((t2 - t1)).count();
 
@@ -67,7 +61,7 @@ HttpClient::Response HttpClient::head(const std::string &uri, const std::multima
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    auto res = client->Head(uri.c_str(), hs);
+    auto res = client->Head(uri, hs);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>((t2 - t1)).count();
 
@@ -145,6 +139,23 @@ std::string HttpClient::get_certificate(){
         return result;
     }
     else{
-        throw std::string("Could not find a SSL certificate");
+        throw "Could not find a SSL certificate";
     }
+}
+
+std::string HttpClient::get_ip(){
+        if(client)
+            return HttpClient::get_ip_from_socket(client->socket());
+        else
+            return "";
+}
+
+std::string HttpClient::get_ip_from_socket(int sock){
+    sockaddr_in addr{};
+    socklen_t addr_len;
+    getpeername(sock, (struct sockaddr *)&addr, &addr_len);
+
+    char buf[17];
+    inet_ntop(AF_INET, &(addr.sin_addr), buf, INET_ADDRSTRLEN);
+    return {buf};
 }

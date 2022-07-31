@@ -10,6 +10,8 @@
 #include <map>
 #include <set>
 
+using ErrorString = std::string;
+
 struct MonitorConnInfo {
     std::string protocol;
     std::string server;
@@ -38,7 +40,7 @@ public:
     std::set<int> success_codes;
 
     // For CONTENT type monitor;
-    std::vector<MonitorConnInfo> mons;
+    std::vector<MonitorConnInfo> moncons;
 
 
     struct Hash { std::size_t operator()(const MonitorObject& mo) const { return std::hash<std::string>{}(mo.mon_id); } };
