@@ -227,7 +227,28 @@ JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Docum
     res_obj.AddMember("status_code_success", rc->status_code_success, allocator);
     res_obj.AddMember("response_header_success", rc->response_header_success, allocator);
     res_obj.AddMember("search_string_success", rc->search_string_success, allocator);
-    res_obj.AddMember("error_str", rapidjson::StringRef(rc->error_str.c_str()), allocator);
+
+    if(!rc->error_str.empty()){
+        rapidjson::Value debug_obj;
+        debug_obj.SetObject();
+
+        debug_obj.AddMember("error_str", rapidjson::StringRef(rc->error_str.c_str()), allocator);
+
+        rapidjson::Value response_headers;
+        response_headers.SetObject();
+
+        for(auto const& [k, v] : rc->response_headers){
+            if (response_headers.HasMember(k)){
+                response_headers[k].SetString(std::string(response_headers.GetString()) + ", " + v, allocator);
+            }
+            else{
+                response_headers.AddMember(rapidjson::StringRef(k), rapidjson::StringRef(v), allocator);
+            }
+        }
+
+        debug_obj.AddMember("response_headers", response_headers, allocator);
+        res_obj.AddMember("debug_info", debug_obj, allocator);
+    }
 
     return res_obj;
 }
@@ -238,7 +259,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
     res_obj.SetObject();
 
     res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
-    res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
+    //res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
 
 
     return res_obj;

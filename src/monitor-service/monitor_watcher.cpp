@@ -63,7 +63,7 @@ void WatcherThread::watch_http(){
                 result->error_str += "Error: " + res.error_message;
             }
             else if(res.status_code != 0){
-                result->error_str += res.error_message;
+                result->error_str += "HTTP " + std::to_string(res.status_code);
             }
         }
 
@@ -87,6 +87,10 @@ void WatcherThread::watch_http(){
             else{
                 result->search_string_success = true;
             }
+        }
+
+        if(!result->error_str.empty()){
+            result->response_headers = res.response_headers;
         }
 
         report_result(static_cast<MonitorResult*>(result));
