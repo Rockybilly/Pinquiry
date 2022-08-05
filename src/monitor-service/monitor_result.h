@@ -12,6 +12,7 @@
 struct MonitorResult{
     std::string mon_id;
     MonitorObject::Type mon_type;
+    virtual ~MonitorResult() = default;
 };
 
 struct PingResult : MonitorResult{

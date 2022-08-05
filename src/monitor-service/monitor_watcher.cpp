@@ -4,25 +4,29 @@
 
 #include "monitor_watcher.h"
 
+#include <utility>
+
 static uint64_t get_epoch_ms(){
     return duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-/// Watcher Thread
-
-WatcherThread::WatcherThread(MonitorObject mon_obj, std::function<void(MonitorResult*)> report_result_handler) : mon(std::move(mon_obj)), report_result(std::move(report_result_handler)){
-
-}
-
-void WatcherThread::watch_ping(){
-    PingClient pc(mon.moncon.server, mon.moncon.timeout_s);
+void PingWorker::do_watch(){
+    PingClient pc(mon.moncon.server, id, socket);
 
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
 
+
         auto res = pc.send_ping();
 
-        std::cout << "Ping " << mon.moncon.server << " total_time: " << res.response_time_ms << " ms." << std::endl;
+        if (res.error_st.empty()){
+            report_entry(id, {mon.mon_id, res.timestamp, res.sequence, mon.moncon.timeout_s});
+            std::cout << "Sent ping: " << mon.moncon.server << ", sequence: " << res.sequence << std::endl;
+        }
+        else{
+            std::cout << "Error sending ping: " << res.error_st << std::endl;
+        }
+
         //std::cout << "Error string: " << res.error << std::endl;
         uint64_t time_end = get_epoch_ms();
         std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
@@ -31,7 +35,7 @@ void WatcherThread::watch_ping(){
     stopped = true;
 }
 
-void WatcherThread::watch_http(){
+void HttpWorker::do_watch(){
     HttpClient cli(mon.moncon.protocol + "://" + mon.moncon.server + ':' + std::to_string(mon.moncon.port), mon.moncon.timeout_s * 1000);
 
     while (!stop){
@@ -103,7 +107,7 @@ void WatcherThread::watch_http(){
     stopped = true;
 }
 
-void WatcherThread::watch_content(){
+void ContentWorker::do_watch(){
     std::vector<HttpClient> clients;
 
     for(auto const& moncon : mon.moncons){
@@ -176,26 +180,31 @@ void WatcherThread::watch_content(){
     stopped = true;
 }
 
-void WatcherThread::watch(){
-    if(mon.mon_type == MonitorObject::Type::PING){
-        th = std::thread(&WatcherThread::watch_ping, this);
-    }
-    else if(mon.mon_type == MonitorObject::Type::HTTP){
-        th = std::thread(&WatcherThread::watch_http, this);
-    }
-    else if(mon.mon_type == MonitorObject::Type::CONTENT){
-        th = std::thread(&WatcherThread::watch_content, this);
-    }
-}
 
 /// Monitor Watcher
 
-MonitorWatcher::MonitorWatcher() = default;
-
 void MonitorWatcher::add_monitors_begin(const std::vector<MonitorObject>& mons){
     for(auto const& mon : mons){
-        auto* wt_ptr = new WatcherThread(mon, [this](MonitorResult* res){add_result(res);});
-        watcher_threads.emplace(mon.mon_id, wt_ptr);
+        void* wt_ptr = nullptr;
+
+        switch (mon.mon_type){
+            case MonitorObject::Type::PING:
+                wt_ptr = new PingWorker(mon, [this](MonitorResult* res){add_result(res);},
+                                        [this](uint16_t id, const PingReceiver::PingClientEntry& entry)
+                                        {ping_receiver.add_new_entry(id, entry);}, ping_next_id,
+                                        ping_receiver.get_socket());
+                ping_receiver.add_new_id(ping_next_id++);
+                break;
+            case MonitorObject::Type::HTTP:
+                wt_ptr = new HttpWorker(mon, [this](MonitorResult* res){add_result(res);});
+                break;
+
+            case MonitorObject::Type::CONTENT:
+                wt_ptr = new ContentWorker(mon, [this](MonitorResult* res){add_result(res);});
+                break;
+        }
+
+        watcher_threads.emplace(mon.mon_id, static_cast<WatcherWorker*>(wt_ptr));
     }
 }
 
@@ -205,37 +214,79 @@ void MonitorWatcher::begin_watch(){
     }
 }
 
-ErrorString MonitorWatcher::add_monitor(const MonitorObject& mon){
-    std::lock_guard<std::mutex> lock(watches_map_mutex);
+ErrorString MonitorWatcher::add_monitor(const MonitorObject& mon, bool lock){
+    if(lock) watches_map_mutex.lock();
 
-    auto* wt_ptr = new WatcherThread(mon, [this](MonitorResult* res){add_result(res);});
-    auto [_, inserted] = watcher_threads.emplace(mon.mon_id, wt_ptr);
+    void* wt_ptr = nullptr;
 
-    if (!inserted){
-        delete wt_ptr;
-        return "Couldn't insert existing mon_id";
+    switch (mon.mon_type){
+        case MonitorObject::Type::PING:
+        {
+            wt_ptr = new PingWorker(mon, [this](MonitorResult* res){add_result(res);}, [this](uint16_t id, const PingReceiver::PingClientEntry& entry)
+            {ping_receiver.add_new_entry(id, entry);}, ping_next_id, ping_receiver.get_socket());
+            auto [_, inserted] = watcher_threads.emplace(mon.mon_id, static_cast<WatcherWorker*>(wt_ptr));
+
+            if (!inserted){
+                delete static_cast<PingWorker*>(wt_ptr);
+                if(lock) watches_map_mutex.unlock();
+                return "Couldn't insert existing mon_id";
+            }
+            ping_receiver.add_new_id(ping_next_id++);
+            break;
+        }
+
+        case MonitorObject::Type::HTTP:
+        {
+            wt_ptr = new HttpWorker(mon, [this](MonitorResult* res){add_result(res);});
+            auto [_, inserted] = watcher_threads.emplace(mon.mon_id, static_cast<WatcherWorker*>(wt_ptr));
+
+            if (!inserted){
+                delete static_cast<HttpWorker*>(wt_ptr);
+                if(lock) watches_map_mutex.unlock();
+                return "Couldn't insert existing mon_id";
+            }
+            break;
+        }
+
+        case MonitorObject::Type::CONTENT:
+        {
+            wt_ptr = new ContentWorker(mon, [this](MonitorResult* res){add_result(res);});
+            auto [_, inserted] = watcher_threads.emplace(mon.mon_id, static_cast<WatcherWorker*>(wt_ptr));
+
+            if (!inserted){
+                delete static_cast<ContentWorker*>(wt_ptr);
+                if(lock) watches_map_mutex.unlock();
+                return "Couldn't insert existing mon_id";
+            }
+            break;
+        }
     }
 
-    wt_ptr->watch();
+    if(lock) watches_map_mutex.unlock();
+    static_cast<WatcherWorker*>(wt_ptr)->watch();
     return "";
 }
 
-ErrorString MonitorWatcher::remove_monitor(const std::string& mon_id){
-    std::lock_guard<std::mutex> lock(watches_map_mutex);
+ErrorString MonitorWatcher::remove_monitor(const std::string& mon_id, bool lock){
+    if(lock) watches_map_mutex.lock();
 
     auto got = watcher_threads.find(mon_id);
     if( got != watcher_threads.end() ){
         got->second->stop = true;
+
+        if(got->second->mon.mon_type == MonitorObject::Type::PING){
+            ping_receiver.remove_id( static_cast<PingWorker*>(got->second)->id );
+        }
     }
     else{
+        if(lock) watches_map_mutex.unlock();
         return "mon_id not found.";
     }
 
     delete_wt_set.insert(got->second);
     watcher_threads.erase(got);
 
-    auto it = delete_wt_set.begin();
-    for (it; it != delete_wt_set.end(); ) {
+    for (auto it = delete_wt_set.begin(); it != delete_wt_set.end(); ) {
         if ((*it)->stopped){
             if((*it)->th.joinable()){
                 (*it)->th.join();
@@ -243,57 +294,26 @@ ErrorString MonitorWatcher::remove_monitor(const std::string& mon_id){
             auto store_ptr = (*it);
             it = delete_wt_set.erase(it);
             delete store_ptr;
-
         }
         else {
             ++it;
         }
     }
 
+    if(lock) watches_map_mutex.unlock();
     return "";
 }
 
 ErrorString MonitorWatcher::update_monitor(const MonitorObject &mon){
     std::lock_guard<std::mutex> lock(watches_map_mutex);
 
-    auto got = watcher_threads.find(mon.mon_id);
-    if( got != watcher_threads.end() ){
-        got->second->stop = true;
-    }
-    else{
-        return "mon_id not found.";
+    ErrorString remove_error_st = remove_monitor(mon.mon_id, false);
+
+    if (!remove_error_st.empty()){
+        return remove_error_st;
     }
 
-    delete_wt_set.insert(got->second);
-    watcher_threads.erase(got);
-
-    auto it = delete_wt_set.begin();
-    for (it; it != delete_wt_set.end(); ) {
-        if ((*it)->stopped){
-            if((*it)->th.joinable()){
-                (*it)->th.join();
-            }
-            auto store_ptr = (*it);
-            it = delete_wt_set.erase(it);
-            delete store_ptr;
-
-        }
-        else {
-            ++it;
-        }
-    }
-
-    auto* wt_ptr = new WatcherThread(mon, [this](MonitorResult* res){add_result(res);});
-    auto [_, inserted] = watcher_threads.emplace(mon.mon_id, wt_ptr);
-
-    if (!inserted){
-        delete wt_ptr;
-        return "Couldn't insert existing mon_id (Shouldn't happen in update method, consult a system admin).";
-    }
-
-    wt_ptr->watch();
-
-    return "";
+    return add_monitor(mon, false);
 }
 
 void MonitorWatcher::add_result(MonitorResult* res){
