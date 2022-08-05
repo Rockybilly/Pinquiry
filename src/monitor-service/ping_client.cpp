@@ -13,7 +13,7 @@ uint64_t get_epoch_ms(){
 
 PingClient::PingClient(const std::string& server, uint16_t id, int socket) : sockfd(socket){
     pkt.header.type = ICMP_ECHO;
-    pkt.header.un.echo.id = id;
+    pkt.header.un.echo.id = htons(id);
 
     addr.sin_family = AF_INET;
     inet_aton(server.c_str(), &addr.sin_addr);

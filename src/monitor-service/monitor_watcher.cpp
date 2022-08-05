@@ -16,12 +16,11 @@ void PingWorker::do_watch(){
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
 
-
         auto res = pc.send_ping();
 
         if (res.error_st.empty()){
             report_entry(id, {mon.mon_id, res.timestamp, res.sequence, mon.moncon.timeout_s});
-            std::cout << "Sent ping: " << mon.moncon.server << ", sequence: " << res.sequence << std::endl;
+            //std::cout << "Sent ping: " << mon.moncon.server << ", id: " << id << ", sequence: " << res.sequence << std::endl;
         }
         else{
             std::cout << "Error sending ping: " << res.error_st << std::endl;

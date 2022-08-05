@@ -15,6 +15,8 @@
 #include <thread>
 #include <functional>
 #include <shared_mutex>
+#include <queue>
+#include <semaphore>
 
 class PingReceiver{
 public:
@@ -29,27 +31,25 @@ private:
     std::unordered_map<uint16_t, EntryList> id_list_map;
     std::shared_mutex list_map_mutex;
     int sockfd = -1;
-
-    std::thread th;
+    std::thread recv_th;
+    std::thread proc_th;
+    std::thread timeo_th;
     std::atomic<bool> stop_flag = false;
     std::function<void(MonitorResult*)> report_result;
+
+    std::queue<std::pair<uint64_t, icmphdr>> process_queue;
+    std::mutex queue_mutex;
+    std::counting_semaphore<256> process_sem{0};
     void receiver_worker();
+    void processor_worker();
+    void timeout_worker();
 public:
-    explicit PingReceiver(std::function<void(MonitorResult*)>&& report_result_handler);
-
-    sockaddr_in r_addr{};
-    uint32_t addr_len = sizeof( r_addr );
-
-    struct PingPkt {
-        icmphdr header;
-    };
-
     struct IPPkt {
         iphdr ip_header;
         icmphdr icmp_header;
     };
 
-    IPPkt recv_pkt{};
+    explicit PingReceiver(std::function<void(MonitorResult*)>&& report_result_handler);
     bool open_socket();
     int get_socket() const { return sockfd;};
     void add_new_id(uint16_t id);
