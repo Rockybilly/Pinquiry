@@ -59,7 +59,8 @@ public class UserService implements IUserService{
 
     @Override
     public User findUserByUsername(String username) {
-        return null;
+        Optional<User> u = repository.findByUsername(username);
+        return u.orElseThrow();
     }
 
     @Override
