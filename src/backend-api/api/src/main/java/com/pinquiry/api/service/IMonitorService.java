@@ -1,7 +1,7 @@
 package com.pinquiry.api.service;
 
-import com.pinquiry.api.model.Monitor;
 import com.pinquiry.api.model.User;
+import com.pinquiry.api.model.monitor.Monitor;
 
 import java.util.List;
 

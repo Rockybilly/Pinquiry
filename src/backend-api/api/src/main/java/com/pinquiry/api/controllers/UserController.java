@@ -30,6 +30,7 @@ public class UserController {
 
     @PostMapping("/create-user")
     public ResponseEntity<String> createUser(@RequestBody User user) {
+        System.out.println(user.getPassword());
 
         boolean succ = userService.createUser(user);
         if (succ )
@@ -41,7 +42,7 @@ public class UserController {
 
 
 
-    @PostMapping("/users/delete-user")
+    @PostMapping("/delete-user")
     public ResponseEntity<String> removeUser(@RequestBody long id) {
         boolean succ = userService.deleteUser(id);
         if (succ)
@@ -61,7 +62,7 @@ public class UserController {
             throw new RuntimeException(e);
         }
 
-        if(!Objects.equals(rootNode.path("current_password").asText(), userService.findUserById(rootNode.path("id").asInt()).getUser_password())){
+        if(!Objects.equals(rootNode.path("current_password").asText(), userService.findUserById(rootNode.path("id").asInt()).getPassword())){
             return ResponseEntity.status(409).body("Current passwords not matching");
         }
         else{
