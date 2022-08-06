@@ -22,6 +22,9 @@ public class CustomAuthenticationManager implements AuthenticationManager {
     }
 
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
+
+
+
         if (auth.getName().equals(auth.getCredentials())) {
             return new UsernamePasswordAuthenticationToken(auth.getName(),
                     auth.getCredentials(), AUTHORITIES);

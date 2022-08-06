@@ -1,9 +1,8 @@
 package com.pinquiry.api.model;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "users", schema = "public", uniqueConstraints = {
@@ -14,7 +13,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_id;
+    private Long userId;
 
     private String username;
 
@@ -28,11 +27,24 @@ public class User {
 
     private Timestamp signupDate;
 
-    @Column(columnDefinition = "text[]")
-    @Type(type="com.pinquiry.api.model.CustomStringArrayType")
-    private String[] Monitors;
+    @OneToMany(mappedBy="monUser")
+    private List<Monitor> monitors;
 
+    public Long getUser_id() {
+        return userId;
+    }
 
+    public void setUser_id(Long user_id) {
+        this.userId = user_id;
+    }
+
+    public List<Monitor> getMonitors() {
+        return monitors;
+    }
+
+    public void setMonitors(List<Monitor> monitors) {
+        this.monitors = monitors;
+    }
 
     public User() {
     }
@@ -46,7 +58,7 @@ public class User {
 
 
     public Long getId() {
-        return user_id;
+        return userId;
     }
 
     public String getUsername() {
@@ -74,14 +86,6 @@ public class User {
         this.email = email;
     }
 
-    public String[] getMonitors() {
-        return Monitors;
-    }
-
-    public void setMonitors(String[] monitors) {
-        Monitors = monitors;
-    }
-
     public Timestamp getSignupDate() {
         return signupDate;
     }
@@ -91,7 +95,7 @@ public class User {
     }
 
     public void setId(Long id) {
-        this.user_id = id;
+        this.userId = id;
     }
 
 
