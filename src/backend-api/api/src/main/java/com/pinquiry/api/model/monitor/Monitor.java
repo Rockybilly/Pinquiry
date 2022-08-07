@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import com.pinquiry.api.model.User;
+import com.pinquiry.api.model.results.MonitorResult;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.util.List;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({@JsonSubTypes.Type(value = HTTPMonitor.class, name = "HTTP"),
         @JsonSubTypes.Type(value = PingMonitor.class, name = "PING"),
@@ -36,6 +39,9 @@ public abstract class Monitor {
     private int timeoutInSeconds;
     @Column(name="interval_s")
     private int intervalInSeconds;
+
+    @OneToMany(mappedBy="monId", cascade = CascadeType.ALL)
+    private List<MonitorResult> results;
 
 
     public Monitor() {

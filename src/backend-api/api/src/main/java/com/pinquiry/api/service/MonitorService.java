@@ -74,4 +74,10 @@ public class MonitorService implements IMonitorService {
 
         return lm;
     }
+
+
+    @Override
+    public  Monitor findMonitorById(long id){
+        return httpMonitorRepository.findById(id).orElseThrow();
+    }
 }

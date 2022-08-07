@@ -12,4 +12,6 @@ public interface IMonitorService {
     boolean updateMonitor(Monitor monitor);
 
     List<Monitor> findMonitorByUserId(User user);
+
+    Monitor findMonitorById(long id);
 }

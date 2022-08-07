@@ -1,2 +1,2 @@
 
-DROP SCHEMA pinquiry CASCADE;
+DROP TABLE users;
