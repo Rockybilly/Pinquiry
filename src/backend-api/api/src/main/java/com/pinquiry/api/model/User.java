@@ -32,7 +32,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @OneToMany(mappedBy="monUser")
+    @OneToMany(mappedBy="monUser", cascade = CascadeType.ALL)
     private List<Monitor> monitors;
 
     public List<Monitor> getMonitors() {

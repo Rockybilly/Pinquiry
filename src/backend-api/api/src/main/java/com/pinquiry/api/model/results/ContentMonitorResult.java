@@ -1,17 +1,19 @@
 package com.pinquiry.api.model.results;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
-public class ContentMonitorResult {
+public class ContentMonitorResult implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JsonProperty("timestamp_ms")
-    private int date;
+    private long date;
 
     private String url;
 
@@ -28,12 +30,9 @@ public class ContentMonitorResult {
     private int BodySizeInBytes;
 
     @JsonProperty("debug_info")
-    @OneToOne( fetch = FetchType.LAZY)
+    @OneToOne( fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private ContentDebugInfo debugInfo;
 
-
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    private ContentMonitorEndResult endResult;
 
     public ContentMonitorResult() {
     }
@@ -46,11 +45,11 @@ public class ContentMonitorResult {
         this.id = id;
     }
 
-    public int getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(int date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
@@ -102,11 +101,4 @@ public class ContentMonitorResult {
         this.debugInfo = debugInfo;
     }
 
-    public ContentMonitorEndResult getEndResult() {
-        return endResult;
-    }
-
-    public void setEndResult(ContentMonitorEndResult endResult) {
-        this.endResult = endResult;
-    }
 }

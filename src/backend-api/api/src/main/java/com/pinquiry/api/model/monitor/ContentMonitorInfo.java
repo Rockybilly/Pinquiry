@@ -1,5 +1,6 @@
 package com.pinquiry.api.model.monitor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -27,10 +28,11 @@ public class ContentMonitorInfo {
 
     private String uri;
     private int port;
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @Parameter( name = "classname", value = "java.util.HaspMap" ) }
-    )
+    @JsonProperty("request_headers")
+    @ElementCollection
+    @CollectionTable(name = "ContentMonitorInfo_request_headers",
+            joinColumns = {@JoinColumn(name = "content_monitor_info_id", referencedColumnName = "id")})
+    @MapKeyColumn(name = "request_header_key")
     private Map<String,String> RequestHeaders;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)

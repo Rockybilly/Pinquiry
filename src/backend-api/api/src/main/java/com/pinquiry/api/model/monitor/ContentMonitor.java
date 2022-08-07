@@ -1,9 +1,6 @@
 package com.pinquiry.api.model.monitor;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,10 +11,10 @@ public class ContentMonitor extends Monitor{
 
     public ContentMonitor() {
         this.setType(MonitorType.CONTENT);
-        this.contentLocations = new ArrayList<>();
         System.out.println("aaaasdadsa");
     }
 
+    @JsonProperty("content_locations")
     @OneToMany(mappedBy="monitor", cascade = CascadeType.ALL)
     List<ContentMonitorInfo> contentLocations;
 

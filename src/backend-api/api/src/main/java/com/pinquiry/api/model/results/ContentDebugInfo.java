@@ -1,27 +1,30 @@
 package com.pinquiry.api.model.results;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Map;
 
 @Entity
-public class ContentDebugInfo {
+public class ContentDebugInfo{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @org.hibernate.annotations.Parameter( name = "classname", value = "java.util.HashMap" ) }
-    )
+
     @JsonProperty("response_headers")
+    @ElementCollection
+    @CollectionTable(name = "ContentDebugInfo_response_headers",
+            joinColumns = {@JoinColumn(name = "content_debug_info_id", referencedColumnName = "id")})
+    @MapKeyColumn(name = "response_header_key")
     private Map<String,String> responseHeaders;
 
-    @OneToOne(mappedBy = "debugInfo")
-    @JoinColumn(name = "id")
+    @JsonIgnore
+    @OneToOne(mappedBy = "debugInfo", cascade = CascadeType.ALL)
     private ContentMonitorResult result;
 
 

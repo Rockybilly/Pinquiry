@@ -1,5 +1,7 @@
 package com.pinquiry.api.model.monitor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
@@ -27,6 +29,7 @@ public abstract class Monitor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User monUser;
@@ -34,10 +37,11 @@ public abstract class Monitor {
 
     @Type( type = "enum_type")
     @Enumerated(EnumType.STRING)
+    @JsonProperty("mon_type")
     private MonitorType type;
-    @Column(name="timeout_s")
+    @JsonProperty("timeout_s")
     private int timeoutInSeconds;
-    @Column(name="interval_s")
+    @JsonProperty("interval_s")
     private int intervalInSeconds;
 
     @OneToMany(mappedBy="monId", cascade = CascadeType.ALL)
@@ -86,5 +90,9 @@ public abstract class Monitor {
 
     public void setMonUser(User monUser) {
         this.monUser = monUser;
+    }
+
+    public List<MonitorResult> getResults() {
+        return results;
     }
 }

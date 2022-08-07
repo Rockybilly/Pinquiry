@@ -1,13 +1,12 @@
 package com.pinquiry.api.model.monitor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Map;
 
@@ -28,21 +27,25 @@ public class HTTPMonitor extends Monitor{
 
     private String uri;
     private int port;
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @Parameter( name = "classname", value = "java.util.HashMap" ) }
-    )
+    @JsonProperty("request_headers")
+    @ElementCollection
+    @CollectionTable(name = "HTTPMonitor_request_headers",
+            joinColumns = {@JoinColumn(name = "http_monitor_id", referencedColumnName = "id")})
+    @MapKeyColumn(name = "request_header_key")
     private Map<String,String> RequestHeaders;
 
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @Parameter( name = "classname", value = "java.util.HashMap" ) }
-    )
+    @JsonProperty("success_headers")
+    @ElementCollection
+    @CollectionTable(name = "HTTPMonitor_response_headers",
+            joinColumns = {@JoinColumn(name = "http_monitor_id", referencedColumnName = "id")})
+    @MapKeyColumn(name = "response_header_key")
     private Map<String,String> ResponseHeaders;
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @Parameter( name = "classname", value = "java.util.Arraylist" ) }
-    )
+
+
+    @JsonProperty("success_codes")
+    @ElementCollection
+    @CollectionTable(name="success_codes", joinColumns=@JoinColumn(name="id"))
+    @Column(name = "success_code")
     private List<Integer> successCodes;
 
     public HTTPMonitor() {
