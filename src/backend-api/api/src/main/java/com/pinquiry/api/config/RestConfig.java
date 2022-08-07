@@ -31,12 +31,12 @@ public class RestConfig {
 
         http
                 .authenticationManager(new CustomAuthenticationManager())
-                .authorizeRequests().antMatchers(HttpMethod.POST, "/a", "/create-user").permitAll().and()
+                .authorizeRequests().antMatchers(HttpMethod.POST, "/a", "/create-user", "/delete-user").permitAll().and()
                 .authorizeRequests().antMatchers( "/control").permitAll().
                         anyRequest().authenticated().and()
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS).and()
                 .csrf().disable();
 
                 http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

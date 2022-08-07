@@ -1,4 +1,4 @@
-package com.pinquiry.api.model;
+package com.pinquiry.api.model.rest;
 
 import java.io.Serializable;
 

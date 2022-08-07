@@ -65,8 +65,8 @@ public class UserService implements IUserService{
 
     @Override
     public boolean updatePassword(User u, String newPassword ){
-        u.setUser_password(newPassword);
-        System.out.println(u.getUser_password());
+        u.setPassword(newPassword);
+        System.out.println(u.getPassword());
         repository.save(u);
         return true;
     }
