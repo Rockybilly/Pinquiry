@@ -5,12 +5,12 @@ import com.pinquiry.api.model.monitor.ContentMonitorInfo;
 
 import java.util.List;
 
-public class ServiceContentMonitor extends ServiceMonitor{
+public class ServiceContentMonitorRequest extends ServiceMonitorRequest {
 
     @JsonProperty("content_locations")
     private List<ContentMonitorInfo> contentLocations;
 
-    public ServiceContentMonitor() {
+    public ServiceContentMonitorRequest() {
     }
 
     @JsonProperty("content_locations")

@@ -5,13 +5,10 @@ import com.pinquiry.api.model.monitor.Monitor;
 import com.pinquiry.api.repository.ServiceWorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 @Service
 public class ServiceWorkerService implements IServiceWorkerService{
@@ -25,6 +22,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
     @Autowired
     ServiceWorkerRepository repository;
 
+
     @Value("${service.port}")
     int port;
 
@@ -37,10 +35,13 @@ public class ServiceWorkerService implements IServiceWorkerService{
             }catch (Exception e){
                 continue;
             }
-            if(type == OperationType.ADD)
+            if(type == OperationType.ADD) {
                 sw.getMonIds().add(m.getId());
+                repository.save(sw);
+            }
             else if (type == OperationType.DELETE) {
                 sw.getMonIds().remove(m.getId());
+                repository.save(sw);
             }
         }
 
@@ -67,8 +68,9 @@ public class ServiceWorkerService implements IServiceWorkerService{
 
             System.out.println(m.toString());
 
-            ResponseEntity<String> result = restTemplate.postForEntity(uri, m, String.class);
-            result.getStatusCode();
+            /*ResponseEntity<String> result = restTemplate.postForEntity(uri, m, String.class);
+            result.getStatusCode();*/
+            //TODO: implement what status codes means what what to do
 
 
         }catch (Exception e){
@@ -80,6 +82,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
     public boolean addServiceWorker(ServiceWorker sw){
         try {
             repository.save(sw);
+
         }catch(Exception e){
             e.printStackTrace();
             return false;
@@ -87,6 +90,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
         return true;
     }
 
+    @Override
     public ServiceWorker findByIp(String ip){
         ServiceWorker sw = null;
         try {
@@ -97,5 +101,20 @@ public class ServiceWorkerService implements IServiceWorkerService{
         }
         return sw;
     }
+
+    @Override
+    public boolean removeServiceWorker(ServiceWorker sw){
+        try {
+            repository.delete(sw);
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+
+
 
 }

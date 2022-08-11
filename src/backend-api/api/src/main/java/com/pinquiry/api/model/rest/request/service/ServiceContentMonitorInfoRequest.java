@@ -1,12 +1,10 @@
 package com.pinquiry.api.model.rest.request.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.util.Map;
 
-public class ServiceContentMonitorInfo {
+public class ServiceContentMonitorInfoRequest {
 
 
     private String protocol;
@@ -16,7 +14,7 @@ public class ServiceContentMonitorInfo {
     private Map<String,String> RequestHeaders;
 
 
-    public ServiceContentMonitorInfo() {
+    public ServiceContentMonitorInfoRequest() {
     }
 
     public String getProtocol() {

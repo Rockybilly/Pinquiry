@@ -22,6 +22,7 @@ public class ResultController {
 
     @PostMapping("/add-result")
     public ResponseEntity<String> addResult(@RequestBody MonitorResult monitorResult){
+
         Monitor m = monitorService.findMonitorById(monitorResult.getMonId());
         monitorResult.setMonitor(m);
         System.out.println(monitorResult);

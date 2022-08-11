@@ -2,7 +2,6 @@ package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.ServiceWorker;
 import com.pinquiry.api.model.monitor.Monitor;
-import org.springframework.stereotype.Service;
 
 
 public interface IServiceWorkerService {
@@ -10,4 +9,8 @@ public interface IServiceWorkerService {
     void sendMonitorToServiceWorker(ServiceWorker sw, Monitor m, ServiceWorkerService.OperationType type);
 
     boolean addServiceWorker(ServiceWorker sw);
+
+    ServiceWorker findByIp(String ip);
+
+    boolean removeServiceWorker(ServiceWorker sw);
 }

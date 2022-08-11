@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,20 +28,20 @@ public class UserService implements IUserService{
         try {
             Date date = new Date();
             user.setSignupDate(new Timestamp(date.getTime()));
-            List<User> ul = new ArrayList<>();
-            ul.add(user);
+            if(user.getRole() == null){
+                user.setRole(User.UserRole.USER);
+            }
             repository
-                    .saveAll(ul);
+                    .save(user);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Could not save user" + e.getCause().toString());
             return false;
         }
     }
     @Override
-    public boolean deleteUser(long id){
+    public boolean deleteUser(User u){
         boolean success = true;
-        User u = findUserById(id);
         try {
             repository.delete(u);
         } catch (Exception e) {
@@ -72,6 +71,19 @@ public class UserService implements IUserService{
     }
 
     @Override
+    public boolean updateUser(User u) {
+        try {
+            repository
+                    .save(u);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Could not update user" + e.getCause().toString());
+            return false;
+        }
+    }
+
+
+    @Override
     public boolean existsByEmail(String email) {
         return repository.existsByEmail(email);
     }
@@ -81,6 +93,10 @@ public class UserService implements IUserService{
         return repository.existsByUsername(username);
     }
 
+
+    public int findAdmins(){
+        return repository.countByRole(User.UserRole.ADMIN);
+    }
 
 
 

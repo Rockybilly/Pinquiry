@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 
-public class ServiceHTTPMonitor extends ServiceMonitor{
+public class ServiceHTTPMonitorRequest extends ServiceMonitorRequest {
 
     private String protocol;
     private String server;
@@ -21,7 +21,7 @@ public class ServiceHTTPMonitor extends ServiceMonitor{
     @JsonProperty("success_codes")
     private List<Integer> successCodes;
 
-    public ServiceHTTPMonitor() {
+    public ServiceHTTPMonitorRequest() {
     }
 
     public String getProtocol() {

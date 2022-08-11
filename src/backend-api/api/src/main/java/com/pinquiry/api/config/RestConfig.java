@@ -30,16 +30,17 @@ public class RestConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .authenticationManager(new CustomAuthenticationManager())
-                .authorizeRequests().antMatchers(HttpMethod.POST, "/login", "/sign-up", "/delete-user").permitAll().and()
-                .authorizeRequests().antMatchers( "/control").permitAll().
-                        anyRequest().authenticated().and()
-                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS).and()
-                .csrf().disable();
+            .authenticationManager(new CustomAuthenticationManager())
 
-                http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+            .authorizeRequests().antMatchers( "/control", "/get_all_monitors", "/logout").permitAll().and()
+            .authorizeRequests().antMatchers(HttpMethod.POST, "/login", "/sign-up").permitAll().
+                                anyRequest().authenticated().and()
+            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+            .csrf().disable();
+
+            http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();

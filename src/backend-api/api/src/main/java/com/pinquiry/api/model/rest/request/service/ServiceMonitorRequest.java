@@ -4,19 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
-import com.pinquiry.api.model.monitor.ContentMonitor;
-import com.pinquiry.api.model.monitor.HTTPMonitor;
-import com.pinquiry.api.model.monitor.Monitor;
-import com.pinquiry.api.model.monitor.PingMonitor;
 import org.hibernate.annotations.TypeDef;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitor.class, name = "HTTP"),
-        @JsonSubTypes.Type(value = ServicePingMonitor.class, name = "PING"),
-        @JsonSubTypes.Type(value = ServiceContentMonitor.class, name = "CONTENT")})
+@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitorRequest.class, name = "HTTP"),
+        @JsonSubTypes.Type(value = ServicePingMonitorRequest.class, name = "PING"),
+        @JsonSubTypes.Type(value = ServiceContentMonitorRequest.class, name = "CONTENT")})
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 
-public abstract class ServiceMonitor {
+public abstract class ServiceMonitorRequest {
 
     public enum MonitorType {
         HTTP, PING, CONTENT
@@ -30,7 +26,7 @@ public abstract class ServiceMonitor {
     @JsonProperty("interval_s")
     private int intervalInSeconds;
 
-    public ServiceMonitor() {
+    public ServiceMonitorRequest() {
     }
 
     public long getMon_id() {

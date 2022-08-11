@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
-import com.pinquiry.api.model.ServiceWorker;
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.results.MonitorResult;
 import org.hibernate.annotations.Type;
@@ -29,6 +28,8 @@ public abstract class Monitor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String name;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -113,5 +114,13 @@ public abstract class Monitor {
 
     public void setLocations(List<String> locations) {
         this.locations = locations;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

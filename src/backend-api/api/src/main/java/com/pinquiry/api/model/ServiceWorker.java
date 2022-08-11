@@ -5,6 +5,9 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
+@Table(name = "service_worker", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "ip")
+})
 public class ServiceWorker {
 
     @Id

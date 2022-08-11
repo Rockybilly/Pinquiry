@@ -1,10 +1,10 @@
 package com.pinquiry.api.model.rest.request.service;
 
-public class ServicePingMonitor extends ServiceMonitor{
+public class ServicePingMonitorRequest extends ServiceMonitorRequest {
 
     private String server;
 
-    public ServicePingMonitor() {
+    public ServicePingMonitorRequest() {
     }
 
     public String getServer() {
