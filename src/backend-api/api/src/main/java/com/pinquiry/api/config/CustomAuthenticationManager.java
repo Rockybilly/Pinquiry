@@ -1,5 +1,9 @@
 package com.pinquiry.api.config;
 
+import com.pinquiry.api.model.User;
+import com.pinquiry.api.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +19,9 @@ import java.util.List;
 @Component
 public class CustomAuthenticationManager implements AuthenticationManager {
 
+    @Autowired
+    UserService userService;
+
     static final List<GrantedAuthority> AUTHORITIES = new ArrayList<>();
 
     static {
@@ -22,10 +29,9 @@ public class CustomAuthenticationManager implements AuthenticationManager {
     }
 
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
+        User u = userService.findUserByUsername(auth.getName());
 
-
-
-        if (auth.getName().equals(auth.getCredentials())) {
+        if (u != null && u.getPassword() == auth.getCredentials()) {
             return new UsernamePasswordAuthenticationToken(auth.getName(),
                     auth.getCredentials(), AUTHORITIES);
         }

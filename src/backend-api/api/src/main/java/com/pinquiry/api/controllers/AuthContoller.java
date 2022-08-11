@@ -3,8 +3,8 @@ package com.pinquiry.api.controllers;
 import com.pinquiry.api.config.CustomAuthenticationManager;
 import com.pinquiry.api.config.CustomUserDetailService;
 import com.pinquiry.api.config.JwtTokenUtil;
-import com.pinquiry.api.model.rest.TokenRequest;
-import com.pinquiry.api.model.rest.TokenResponse;
+import com.pinquiry.api.model.rest.request.TokenRequest;
+import com.pinquiry.api.model.rest.response.TokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,7 +37,7 @@ public class AuthContoller {
     }
 
 
-    @PostMapping( "/a")
+    @PostMapping( "/get-tok")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody TokenRequest authenticationRequest) throws Exception {
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());

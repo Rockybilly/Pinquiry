@@ -2,7 +2,9 @@ package com.pinquiry.api.controllers;
 
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.monitor.Monitor;
+import com.pinquiry.api.model.rest.response.GetMonitors;
 import com.pinquiry.api.service.MonitorService;
+import com.pinquiry.api.service.ServiceWorkerService;
 import com.pinquiry.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,18 +25,27 @@ public class MonitorController {
     UserService userService;
     @Autowired
     MonitorService monitorService;
+
+    @Autowired
+    ServiceWorkerService serviceWorkerService;
+
     @PostMapping("/add-monitor")
     public ResponseEntity<String> addMonitor(@RequestBody Monitor monitor){
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails)auth.getPrincipal();
         User u = userService.findUserByUsername(userDetails.getUsername());
-        System.out.println(u);
 
         boolean succ = monitorService.createMonitor(u, monitor);
-        if (succ)
+
+        if (succ){
+            for(String loc: monitor.getLocations()){
+                serviceWorkerService.addMonitorToServiceWorkerByLocation(loc, monitor, ServiceWorkerService.OperationType.ADD);
+            }
             return ResponseEntity.status(201).body("Created");
+        }
         else
-            return ResponseEntity.status(409).body("Not created");
+            return ResponseEntity.status(409).body("Monitor could not created");
 
 
     }
@@ -45,10 +56,20 @@ public class MonitorController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails)auth.getPrincipal();
         User u = userService.findUserByUsername(userDetails.getUsername());
+        List<Monitor> lm;
+        GetMonitors monitors = new GetMonitors();
+        try {
+            lm = monitorService.findMonitorByUserId(u);
+        }catch (Exception e){
+            System.out.println("No monitors");
+            return ResponseEntity.ok().body(monitors);
+        }
 
-        List<Monitor> lm = monitorService.findMonitorByUserId(u);
+        for(Monitor m: lm){
+            monitors.getMonitorList().put(m.getId(), m.getType().toString().toLowerCase());
+        }
 
-        return ResponseEntity.ok(lm);
+        return ResponseEntity.ok().body(monitors);
     }
 
 }

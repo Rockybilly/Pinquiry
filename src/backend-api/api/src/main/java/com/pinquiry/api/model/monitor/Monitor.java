@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
+import com.pinquiry.api.model.ServiceWorker;
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.results.MonitorResult;
 import org.hibernate.annotations.Type;
@@ -46,6 +47,11 @@ public abstract class Monitor {
 
     @OneToMany(mappedBy="monId", cascade = CascadeType.ALL)
     private List<MonitorResult> results;
+
+    @ElementCollection
+    @CollectionTable(name="monitor_locations", joinColumns=@JoinColumn(name="id"))
+    @Column(name = "locations")
+    private List<String> locations;
 
 
     public Monitor() {
@@ -94,5 +100,18 @@ public abstract class Monitor {
 
     public List<MonitorResult> getResults() {
         return results;
+    }
+
+
+    public void setResults(List<MonitorResult> results) {
+        this.results = results;
+    }
+
+    public List<String> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<String> locations) {
+        this.locations = locations;
     }
 }

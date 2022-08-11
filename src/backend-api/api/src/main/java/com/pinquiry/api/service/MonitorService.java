@@ -35,8 +35,6 @@ public class MonitorService implements IMonitorService {
     public List<Monitor> findMonitorByUserId(User user) {
 
         List<Monitor> lm = new ArrayList<>(monitorRepository.findAllByMonUser(user));
-        lm.addAll(monitorRepository.findAllByMonUser(user));
-        lm.addAll(monitorRepository.findAllByMonUser(user));
 
         return lm;
     }

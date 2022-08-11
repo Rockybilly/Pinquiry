@@ -1,8 +1,6 @@
 package com.pinquiry.api.controllers;
 
 import com.pinquiry.api.model.monitor.Monitor;
-import com.pinquiry.api.model.results.ContentMonitorEndResult;
-import com.pinquiry.api.model.results.ContentMonitorResult;
 import com.pinquiry.api.model.results.MonitorResult;
 import com.pinquiry.api.service.MonitorService;
 import com.pinquiry.api.service.ResultService;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
