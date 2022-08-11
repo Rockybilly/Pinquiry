@@ -275,6 +275,7 @@ JsonObject json_create_ping_result(const MonitorResult* result, rapidjson::Docum
     res_obj.SetObject();
 
     res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
     res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
 
@@ -289,6 +290,7 @@ JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Docum
     res_obj.SetObject();
 
     res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
     res_obj.AddMember("server_ip", rapidjson::StringRef(rc->server_ip), allocator);
     res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
@@ -327,7 +329,8 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
     rapidjson::Value res_obj;
     res_obj.SetObject();
 
-    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("num_of_groups", rc->num_of_groups, allocator);
 
     rapidjson::Value groups_arr(rapidjson::kArrayType);

@@ -10,9 +10,6 @@ BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip +
 
 }
 
-void BackendClient::report_results(MonitorObject& mon_obj, MonitorResult& mon_res){
-
-}
 
 std::vector<MonitorObject> BackendClient::get_monitors(){
     std::vector<MonitorObject> result;
@@ -43,4 +40,8 @@ std::vector<MonitorObject> BackendClient::get_monitors(){
     }
 
     return {};
+}
+
+void BackendClient::report_results(const std::string& result) {
+    backend_cli.post_body("/add_results", {}, result);
 }

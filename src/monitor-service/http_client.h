@@ -33,6 +33,7 @@ public:
 
     Response head(const std::string& uri,
                   const std::multimap<std::string, std::string>& headers = {});
+    Response post_body(const std::string &uri, const std::multimap<std::string, std::string> &headers, const std::string &body);
 
     std::string get_ip();
     static std::string get_ip_from_socket(int sock);
@@ -45,6 +46,7 @@ private:
     std::string server_name;
 
     std::unique_ptr<httplib::Client> client = nullptr;
+
 };
 
 #endif //PINQUIRY_HTTP_CLIENT_H

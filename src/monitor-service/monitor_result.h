@@ -13,6 +13,15 @@ struct MonitorResult{
     std::string mon_id;
     MonitorObject::Type mon_type;
     virtual ~MonitorResult() = default;
+    [[nodiscard]] std::string get_type_str() const{
+        switch (mon_type) {
+            case MonitorObject::Type::PING:
+                return "ping";
+            case MonitorObject::Type::HTTP:
+                return "http";
+            case MonitorObject::Type::CONTENT:
+                return "content";
+        }}
 };
 
 struct PingResult : MonitorResult{

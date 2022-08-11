@@ -4,9 +4,15 @@
 
 MonitorLogger logger;
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    if(argc != 3){
+        std::cout << "Usage ./Pinquiry backend_ip backend_port" << std::endl;
+        exit(1);
+    }
+
     logger.initialize("/var/log/pinquiry_monitor_service/general.log");
-    MonitorService ms("127.0.0.1", 3333);
+    MonitorService ms(argv[1], std::atoi(argv[2]));
     ms.begin_service();
 
 
