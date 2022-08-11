@@ -2,10 +2,8 @@ package com.pinquiry.api.model.results;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Map;
 
 @Entity
@@ -25,7 +23,7 @@ public class ContentDebugInfo{
 
     @JsonIgnore
     @OneToOne(mappedBy = "debugInfo", cascade = CascadeType.ALL)
-    private ContentMonitorResult result;
+    ContentMonitorResult result;
 
 
     public ContentDebugInfo() {

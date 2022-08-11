@@ -2,7 +2,7 @@ package com.pinquiry.api.controllers;
 
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.monitor.Monitor;
-import com.pinquiry.api.model.rest.MonitorIdRequest;
+import com.pinquiry.api.model.rest.request.MonitorIdRequest;
 import com.pinquiry.api.model.rest.response.UserMonitorListResponse;
 import com.pinquiry.api.model.rest.response.UserMonitorListResponseMonitor;
 import com.pinquiry.api.service.AuthService;

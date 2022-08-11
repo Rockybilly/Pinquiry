@@ -46,7 +46,7 @@ public abstract class Monitor {
     @JsonProperty("interval_s")
     private int intervalInSeconds;
 
-    @OneToMany(mappedBy="monId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy="monitor", cascade = CascadeType.ALL)
     private List<MonitorResult> results;
 
     @ElementCollection
