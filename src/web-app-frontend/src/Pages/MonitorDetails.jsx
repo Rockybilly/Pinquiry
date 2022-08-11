@@ -19,7 +19,6 @@ class Dashboard extends React.Component {
       <div
         style={{ width: "100%", height: "100%", margin: "0px", padding: "0px" }}
       >
-        <Navbar />
         <Grid container direction="row" alignItems="stretch">
           <Grid
             item

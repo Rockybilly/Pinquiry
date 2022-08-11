@@ -5,15 +5,15 @@ import { AppBar, Button, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import TextField, { textFieldClasses } from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../Components/Navbar";
+
 import { loginUser } from "../../Services/login";
 import { useStoreActions } from "easy-peasy";
 
 function Login({ onClickSignup }) {
-  const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const setUser = useStoreActions((actions) => actions.setUser);
+  const doLogin = useStoreActions((actions) => actions.doLogin);
+  const setLoginLoading = useStoreActions((actions) => actions.setLoginLoading);
 
   const handleNameChange = (event) => {
     event.preventDefault();
@@ -27,10 +27,7 @@ function Login({ onClickSignup }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(event);
-    const authResult = loginUser(userName, password);
-    setUser(authResult);
-    navigate("/dashboard");
+    doLogin({ name: userName, pass: password });
   };
 
   const handleGoSignup = () => {

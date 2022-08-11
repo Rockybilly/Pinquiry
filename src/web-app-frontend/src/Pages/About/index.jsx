@@ -2,7 +2,7 @@ import React from "react";
 
 import { AppBar, Button, Typography, Toolbar, Paper } from "@mui/material";
 import { Link } from "react-router-dom";
-import Navbar from "../../Components/Navbar";
+
 import Grid from "@mui/material/Grid";
 
 function About() {
@@ -10,7 +10,6 @@ function About() {
     <div
       style={{ width: "100%", height: "100vh", margin: "0px", padding: "0px" }}
     >
-      <Navbar />
       <Grid
         container
         direction="row"

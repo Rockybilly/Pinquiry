@@ -5,7 +5,6 @@ import { AppBar, Button, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import TextField, { textFieldClasses } from "@mui/material/TextField";
 import { Link } from "react-router-dom";
-import Navbar from "../../Components/Navbar";
 
 function Signup({ onGoLogin }) {
   const [userName, setUserName] = useState("");
