@@ -1,52 +1,61 @@
 package com.pinquiry.api.model;
 
+import com.pinquiry.api.model.monitor.Monitor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
-@Table(name = "users", schema = "public", uniqueConstraints = {
+@Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
 public class User {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_id;
+    private Long userId;
+
+    public enum UserRole {
+        ADMIN, USER
+    }
 
     private String username;
-
-
-    private String user_password;
-
-
+    @Column(name = "user_password")
+    private String password;
     private String email;
-
-
-
     private Timestamp signupDate;
+    @Type( type = "enum_type")
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
-    @Column(columnDefinition = "text[]")
-    @Type(type="com.pinquiry.api.model.CustomStringArrayType")
-    private String[] Monitors;
+    @OneToMany(mappedBy="monUser", cascade = CascadeType.ALL)
+    private List<Monitor> monitors;
 
+    public List<Monitor> getMonitors() {
+        return monitors;
+    }
 
+    public void setMonitors(List<Monitor> monitors) {
+        this.monitors = monitors;
+    }
 
     public User() {
     }
 
     public User(String username, String user_password, String email, Timestamp signupDate) {
         this.username = username;
-        this.user_password = user_password;
+        this.password = user_password;
         this.email = email;
         this.signupDate = signupDate;
     }
 
 
     public Long getId() {
-        return user_id;
+        return userId;
     }
 
     public String getUsername() {
@@ -57,29 +66,12 @@ public class User {
         this.username = username;
     }
 
-    public String getUser_password() {
-        return user_password;
-    }
-
-    public void setUser_password(String password) {
-        this.user_password = password;
-    }
-
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String[] getMonitors() {
-        return Monitors;
-    }
-
-    public void setMonitors(String[] monitors) {
-        Monitors = monitors;
     }
 
     public Timestamp getSignupDate() {
@@ -91,7 +83,31 @@ public class User {
     }
 
     public void setId(Long id) {
-        this.user_id = id;
+        this.userId = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
 
