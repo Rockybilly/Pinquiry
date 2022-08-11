@@ -6,8 +6,7 @@ import { BasicCard } from "./BasicCard";
 export function BasicLineCard({ width, height, data, dataKey }) {
   return (
     <BasicCard>
-      {" "}
-      <ResponsiveContainer>
+      <ResponsiveContainer {...console.log(width, height, dataKey)}>
         <LineChart width={width} height={height} data={data}>
           <Line
             type="monotone"

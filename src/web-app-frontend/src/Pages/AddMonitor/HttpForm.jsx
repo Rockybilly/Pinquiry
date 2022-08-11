@@ -42,7 +42,7 @@ export default function HttpForm({ form }) {
         </Select>
       </Form.Item>
       <Form.Item
-        style={{ width: "60%" }}
+        style={{ width: "80%" }}
         label="Server IP/Domain"
         name="http_server"
         required={true}
@@ -236,6 +236,13 @@ export default function HttpForm({ form }) {
           )}
         </Form.List>
       </div>
+      <Form.Item
+        tooltip="A string to be searched in the body of the request. Optional."
+        name="search_string"
+        label="Search String"
+      >
+        <Input placeholder="Enter search string" />
+      </Form.Item>
     </>
   );
 }

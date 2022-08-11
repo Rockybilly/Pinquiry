@@ -116,13 +116,13 @@ function Dashboard() {
           }}
           span={12}
         >
-          <BasicTextCard
+          <BasicLineCard
             backgroundColor={"#28c76f"}
             textColor={"#00273b"}
-            header="Incident Count"
-            text="0"
-            footer="incidents"
-            size="35vh"
+            width="15vh"
+            height="15vh"
+            data={data2}
+            dataKey="response_time_ms"
           />
         </Col>
         <Col

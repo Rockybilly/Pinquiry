@@ -1,33 +1,43 @@
-import { Button, Form, Input, InputNumber, Radio, Select, Space } from "antd";
-import React, { useState } from "react";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Radio,
+  Select,
+  Space,
+  Spin,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import PingForm from "./PingForm";
 import HttpForm from "./HttpForm";
 import ContentForm from "./ContentForm";
 import ReactCountryFlag from "react-country-flag";
 import { MinusCircleOutlined } from "@ant-design/icons";
+import {
+  getMonitorServices,
+  getUserIncidentCount,
+  getUserMonitorCount,
+} from "../../Services/backendComm";
 const { Option } = Select;
 
 export function AddForm() {
   const [form] = Form.useForm();
+  const [monitorServices, setMonitorServices] = useState([]);
+  const [contentLoading, setContentLoading] = useState(true);
+
+  useEffect(() => {
+    async function doWork() {
+      setContentLoading(true);
+      setMonitorServices(await getMonitorServices());
+      setContentLoading(false);
+    }
+    doWork();
+  }, []);
 
   const onFinish = (values) => {
     console.log(values);
   };
-
-  const monitorServices = [
-    {
-      serviceId: "abc",
-      serviceIp: "127.0.0.1",
-      countryName: "United States",
-      countryCode: "US",
-    },
-    {
-      serviceId: "abc2",
-      serviceIp: "127.0.0.2",
-      countryName: "United Kingdom",
-      countryCode: "GB",
-    },
-  ];
 
   return (
     <Form
@@ -49,14 +59,25 @@ export function AddForm() {
           },
         ]}
       >
-        <Select placeholder="Select service">
-          {monitorServices.map((d, index) => (
-            <Option key={index} value={d.serviceId}>
-              <ReactCountryFlag countryCode={d.countryCode} />{" "}
-              {d.countryName + "(" + d.serviceIp + ")"}
-            </Option>
-          ))}
-        </Select>
+        {contentLoading ? (
+          <Spin spinning={contentLoading} />
+        ) : (
+          <Select placeholder="Select service">
+            {monitorServices.map((d, index) => (
+              <Option key={index} value={d.serviceId}>
+                <ReactCountryFlag
+                  style={{
+                    width: "1.3vw",
+                    height: "1.3vw",
+                  }}
+                  countryCode={d.countryCode}
+                  svg
+                />
+                {"  " + d.countryName + " (" + d.serviceIp + ")"}
+              </Option>
+            ))}
+          </Select>
+        )}
       </Form.Item>
       <Form.Item label="Monitor Type" name="type">
         <Radio.Group value="Ping">
@@ -85,6 +106,7 @@ export function AddForm() {
       <Form.Item
         label="Timeout (s)"
         name="timeout"
+        tooltip="Request will be considered failed after this timeout value is exceeded. In seconds."
         required={true}
         rules={[
           {
@@ -96,6 +118,7 @@ export function AddForm() {
         <InputNumber placeholder="2" />
       </Form.Item>
       <Form.Item
+        tooltip="The requests will be sent with this interval. In seconds."
         label="Request Interval (s)"
         name="interval"
         required={true}

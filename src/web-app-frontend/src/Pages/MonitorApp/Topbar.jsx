@@ -38,20 +38,11 @@ export function Topbar() {
             aspectRatio: "795/277",
             marginLeft: 8,
           }}
-          src={logo}
-          alt="Logo"
-        />
-
-        <img
-          style={{
-            height: "100%",
-            width: "undefined",
-            aspectRatio: "795/277",
-            marginLeft: 8,
-          }}
           src={logoRzgi}
           alt="Logo"
         />
+        <Col flex={1} />
+        <span style={{ fontSize: "2em" }}>WebApp</span>
         <Col flex={1} />
         <Menu.Item
           key="1"
@@ -59,7 +50,6 @@ export function Topbar() {
         >
           <UserOutlined /> Welcome, {user.name}
         </Menu.Item>
-
         <Menu.Item
           onClick={onLogOutClick}
           style={{ height: "100%" }}

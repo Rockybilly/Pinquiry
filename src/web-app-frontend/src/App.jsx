@@ -18,6 +18,7 @@ import Monitors from "./Pages/Monitors";
 import About from "./Pages/About";
 import SecureRoute from "./Components/SecureRoute";
 import { loginUser } from "./Services/login";
+import EditProfile from "./Pages/EditProfile";
 
 const store = createStore(
   {
@@ -68,6 +69,7 @@ function App() {
             <Route index path="dashboard" element={<Dashboard />} />
             <Route path="add-monitor" element={<AddMonitor />} />
             <Route path="monitors" element={<Monitors />} />
+            <Route path="edit-profile" element={<EditProfile />} />
           </Route>
         </Routes>
       </HistoryRouter>
