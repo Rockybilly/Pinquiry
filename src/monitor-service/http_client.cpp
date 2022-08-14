@@ -132,7 +132,7 @@ std::string HttpClient::get_error_message_httplib(httplib::Error result){
         case httplib::Error::BindIPAddress:
             return "BindIPAddress";
         case httplib::Error::Read:
-            return "Read";
+            return "Timeout";
         case httplib::Error::Write:
             return "Write";
         case httplib::Error::ExceedRedirectCount:

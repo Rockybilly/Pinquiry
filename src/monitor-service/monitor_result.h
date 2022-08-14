@@ -12,6 +12,7 @@
 struct MonitorResult{
     std::string mon_id;
     MonitorObject::Type mon_type;
+    uint64_t timestamp_ms;
     virtual ~MonitorResult() = default;
     [[nodiscard]] std::string get_type_str() const{
         switch (mon_type) {
@@ -25,7 +26,6 @@ struct MonitorResult{
 };
 
 struct PingResult : MonitorResult{
-    uint64_t timestamp_ms;
     uint16_t response_time_ms;
 
     bool success;
@@ -35,10 +35,9 @@ struct PingResult : MonitorResult{
 };
 
 struct HTTPResult : MonitorResult{
-    uint64_t timestamp_ms;
     std::string server_ip;
     uint16_t response_time_ms;
-    uint8_t status_code;
+    int status_code;
 
     bool response_header_success;
     bool status_code_success;
@@ -55,11 +54,11 @@ struct ContentResult : MonitorResult{
     uint8_t num_of_groups = 0;
 
     struct SingleResult{
-        uint64_t timestamp_ms;
+
         std::string url;
         std::string server_ip;
         uint16_t response_time_ms;
-        uint8_t status_code;
+        int status_code;
         uint64_t body_size;
 
         // In case of error

@@ -128,6 +128,7 @@ void ContentWorker::do_watch(){
 
         auto* result = new ContentResult();
 
+        result->timestamp_ms = time_begin;
         result->mon_id = mon.mon_id;
         result->mon_type = mon.mon_type;
 
@@ -140,7 +141,6 @@ void ContentWorker::do_watch(){
 
             sr.response_time_ms = r.response_time_ms;
             sr.status_code = r.status_code;
-            sr.timestamp_ms = r.timestamp_ms;
 
             sr.response_headers = std::move(r.response_headers);
             sr.url = mon.moncons[i].protocol + "://" + mon.moncons[i].server +

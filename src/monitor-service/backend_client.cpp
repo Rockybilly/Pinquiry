@@ -6,7 +6,7 @@
 #include "include/rapidjson/document.h"
 #include "json_handler.h"
 
-BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 1){
+BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 5000){
 
 }
 
@@ -20,7 +20,8 @@ std::vector<MonitorObject> BackendClient::get_monitors(){
         status_code = res.status_code;
 
         if(status_code != 200){
-            std::cerr << "Could not get monitors from the backend." << std::endl;
+            std::cerr << "Could not get monitors from the backend, " << "status_code: "
+            << status_code << ", error:" << res.error_message << std::endl;
         }
         else if (res.body.empty()){
             std::cerr << "Backend get_monitors result shouldn't be empty." << std::endl;
