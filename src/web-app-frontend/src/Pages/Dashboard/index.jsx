@@ -2,57 +2,33 @@ import MonitorApp from "../MonitorApp";
 
 import { Col, Divider, Row, Spin } from "antd";
 import React, { useEffect, useState } from "react";
-import { Paper } from "@mui/material";
-import {
-  getUserIncidentCount,
-  getUserMonitorCount,
-} from "../../Services/backendComm";
-import { BasicLineCard } from "../../Components/BasicLineCard";
+import { getDashboardStatistics } from "../../Services/backendComm";
+import { PieChartCard } from "../../Components/PieChartCard";
 import { BasicTextCard } from "../../Components/BasicTextCard";
-
-const data2 = [
-  {
-    name: "Page A",
-    response_time_ms: 8098,
-  },
-  {
-    name: "Page B",
-    response_time_ms: 7771,
-  },
-  {
-    name: "Page C",
-    response_time_ms: 9021,
-  },
-  {
-    name: "Page D",
-    response_time_ms: 8211,
-  },
-  {
-    name: "Page E",
-    response_time_ms: 7599,
-  },
-  {
-    name: "Page F",
-    response_time_ms: 7869,
-  },
-  {
-    name: "Page G",
-    response_time_ms: 8001,
-  },
-];
+import CustomTooltip from "./CustomTooltip";
 
 function Dashboard() {
   const [contentLoading, setContentLoading] = useState(true);
-  const [monitorCount, setMonitorCount] = useState(0);
-  const [incidentCount, setIncidentCount] = useState(0);
+  const [monitorIncidentList, setMonitorIncidentList] = useState([]);
+  const [statistics, setStatistics] = useState({});
 
   useEffect(() => {
     async function doWork() {
       setContentLoading(true);
-      setMonitorCount(await getUserMonitorCount("ata"));
-      setIncidentCount(await getUserIncidentCount("ata"));
+      let local_statistics = {};
+      setStatistics(await getDashboardStatistics());
       setContentLoading(false);
+
+      let list = [];
+      if (statistics.topTenIncidents) {
+        Object.keys(statistics.topTenIncidents).forEach((key) => {
+          //console.log(key);
+          list.push({ name: key, value: statistics.topTenIncidents[key] });
+        });
+      }
+      setMonitorIncidentList(list);
     }
+
     doWork();
   }, []);
 
@@ -80,7 +56,7 @@ function Dashboard() {
             backgroundColor={"#ffffff"}
             textColor={"#00273b"}
             header="Monitor Count"
-            text={monitorCount}
+            text={statistics.monCount}
             footer="Monitors"
             size="35vh"
           />
@@ -97,11 +73,13 @@ function Dashboard() {
           {/*#ea5455*/}
 
           <BasicTextCard
-            backgroundColor={incidentCount > 0 ? "#ea5455" : "#28c76f"}
+            backgroundColor={
+              statistics.incidentCountLastHour > 0 ? "#ea5455" : "#28c76f"
+            }
             textColor={"#00273b"}
             header="Incident Count"
-            text={incidentCount}
-            footer="incidents"
+            text={statistics.incidentCountLastHour}
+            footer="in the last hour"
             size="35vh"
           />
         </Col>
@@ -116,13 +94,17 @@ function Dashboard() {
           }}
           span={12}
         >
-          <BasicLineCard
+          <PieChartCard
             backgroundColor={"#28c76f"}
             textColor={"#00273b"}
-            width="15vh"
-            height="15vh"
-            data={data2}
-            dataKey="response_time_ms"
+            size="35vh"
+            data={monitorIncidentList}
+            dataKey="value"
+            header={
+              "Incident counts of " +
+              monitorIncidentList.length +
+              " monitors (last hour)"
+            }
           />
         </Col>
         <Col
@@ -134,11 +116,11 @@ function Dashboard() {
           span={12}
         >
           <BasicTextCard
-            backgroundColor={"#28c76f"}
+            backgroundColor={"#28c7ff"}
             textColor={"#00273b"}
-            header="Incident Count"
-            text="0"
-            footer="incidents"
+            header="Requests"
+            text={statistics.requestPerMinute}
+            footer="per minute"
             size="35vh"
           />
         </Col>

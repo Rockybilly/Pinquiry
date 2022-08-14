@@ -26,6 +26,7 @@ function MonitorApp() {
       >
         <Topbar />
       </Row>
+
       <Row
         style={{ width: "100%", height: "96%", margin: "0px", padding: "0px" }}
       >

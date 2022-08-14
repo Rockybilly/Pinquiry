@@ -153,7 +153,16 @@ export default function ContentForm({ form }) {
                 >
                   <InputNumber placeholder="80" />
                 </Form.Item>
-                <Form.Item label="URI" name={[name, "uri"]}>
+                <Form.Item
+                  label="URI"
+                  name={[name, "uri"]}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Use at least '/'",
+                    },
+                  ]}
+                >
                   <Input placeholder="/index.html" />
                 </Form.Item>
                 <Form.Item>

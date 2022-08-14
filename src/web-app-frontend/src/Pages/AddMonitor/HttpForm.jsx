@@ -68,7 +68,17 @@ export default function HttpForm({ form }) {
       >
         <InputNumber placeholder="80" />
       </Form.Item>
-      <Form.Item style={{ width: "50%" }} label="URI" name="uri">
+      <Form.Item
+        rules={[
+          {
+            required: true,
+            message: "Use at least '/'",
+          },
+        ]}
+        style={{ width: "50%" }}
+        label="URI"
+        name="uri"
+      >
         <Input placeholder="/index.html" />
       </Form.Item>
       <div

@@ -13,15 +13,12 @@ import { useStoreActions, useStoreState } from "easy-peasy";
 import logo from "../../static/PinquiryLogoBlue.png";
 import logoRzgi from "../../static/PinquiryLogoRzgi.png";
 export function Topbar() {
-  const navigate = useNavigate();
-  const [current, setCurrent] = useState("1");
   const user = useStoreState((state) => state.user);
-  const setUser = useStoreActions((actions) => actions.setUser);
+  const doLogout = useStoreActions((actions) => actions.doLogout);
 
   const onLogOutClick = (e) => {
     console.log("click ", "LoggedOut");
-    setUser("");
-    navigate("/");
+    doLogout();
   };
 
   return (
@@ -48,7 +45,7 @@ export function Topbar() {
           key="1"
           style={{ height: "100%", backgroundColor: "transparent" }}
         >
-          <UserOutlined /> Welcome, {user.name}
+          <UserOutlined /> Welcome, {user.username}
         </Menu.Item>
         <Menu.Item
           onClick={onLogOutClick}

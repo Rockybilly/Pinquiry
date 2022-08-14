@@ -4,7 +4,7 @@ import "../../App.css";
 import { AppBar, Button, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import TextField, { textFieldClasses } from "@mui/material/TextField";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import Signup from "./Signup";
 import Login from "./Login";
@@ -16,10 +16,17 @@ function LandingPage() {
   const [login, setLogin] = useState(true);
   const loginLoading = useStoreState((state) => state.loginLoading);
 
+  const user = useStoreState((state) => state.user);
+
+  if (!loginLoading && user.isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
+
   /*
-  useEffect(() => {
-    console.log(loginLoading);
-  }, [loginLoading]);*/
+    useEffect(() => {
+      console.log(loginLoading);
+    }, [loginLoading]);*/
+
   return (
     <Spin spinning={loginLoading}>
       <div

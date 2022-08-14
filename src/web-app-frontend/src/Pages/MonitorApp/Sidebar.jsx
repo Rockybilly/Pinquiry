@@ -5,16 +5,19 @@ import {
   LogoutOutlined,
   PlusSquareOutlined,
   SettingOutlined,
+  TableOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { Link, useLocation } from "react-router-dom";
+import AdminSecureComponent from "../../Components/AdminSecureComponent";
+import { useStoreState } from "easy-peasy";
 
 export function Sidebar() {
   const [current, setCurrent] = useState("/dashboard");
-
+  const user = useStoreState((state) => state.user);
   let location = useLocation();
 
   useEffect(() => {
@@ -49,6 +52,19 @@ export function Sidebar() {
         <Menu.Item key="/edit-profile" icon={<SettingOutlined />}>
           <Link to="/edit-profile">Edit Profile</Link>
         </Menu.Item>
+
+        {user.isAdmin && (
+          <>
+            <Menu.Divider />
+            <Menu.Divider />
+            <Menu.Item key="/user-operations" icon={<UserOutlined />}>
+              <Link to="/user-operations">User Operations</Link>
+            </Menu.Item>
+            <Menu.Item key="/monitor-services" icon={<TableOutlined />}>
+              <Link to="/monitor-services">Monitor Service Workers</Link>
+            </Menu.Item>
+          </>
+        )}
       </Menu>
     </>
   );

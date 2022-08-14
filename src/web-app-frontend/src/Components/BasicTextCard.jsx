@@ -13,9 +13,12 @@ export function BasicTextCard({
   textColor,
   size,
 }) {
-  console.log("70% " + String(text).length * 10 + "vh");
   return (
-    <BasicCard backgroundColor={backgroundColor} size={size}>
+    <BasicCard
+      backgroundColor={backgroundColor}
+      size={size}
+      style={{ textShadow: "rgba(0,0,0,.8) 0 0 100px" }}
+    >
       <Col
         style={{
           height: size,
@@ -33,7 +36,9 @@ export function BasicTextCard({
             alignItems: "center",
           }}
         >
-          {header}
+          <span style={{ textShadow: "rgba(0,0,0,0.8) 0 0 1px" }}>
+            {header}
+          </span>
         </Row>
         <Row
           style={{
@@ -57,6 +62,7 @@ export function BasicTextCard({
             style={{
               position: "relative",
               bottom: "calc(40% - " + String(text).length * 0.4 + "vh)",
+              textShadow: "rgba(0,0,0,.8) 0 0 5px",
             }}
           >
             {text}
@@ -73,7 +79,15 @@ export function BasicTextCard({
             alignItems: "center",
           }}
         >
-          <div style={{ position: "relative", top: "-50%" }}>{footer} </div>
+          <div
+            style={{
+              position: "relative",
+              top: "-50%",
+              textShadow: "rgba(0,0,0,.8) 0 0 2px",
+            }}
+          >
+            {footer}{" "}
+          </div>
         </Row>
       </Col>
     </BasicCard>

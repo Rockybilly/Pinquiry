@@ -5,16 +5,20 @@ import { AppBar, Button, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import TextField, { textFieldClasses } from "@mui/material/TextField";
 import { Link } from "react-router-dom";
+import { useStoreActions } from "easy-peasy";
+
+const md5 = require("md5");
 
 function Signup({ onGoLogin }) {
-  const [userName, setUserName] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmationPassword, setConfirmationPassword] = useState("");
   const [error, setError] = useState(null);
+  const doSingup = useStoreActions((actions) => actions.doSignup);
 
   const handleNameChange = (event) => {
     event.preventDefault();
-    setUserName(event.target.value);
+    setUsername(event.target.value);
   };
 
   const handlePasswordChange = (event) => {
@@ -33,6 +37,8 @@ function Signup({ onGoLogin }) {
     event.preventDefault();
     if (password !== confirmationPassword) {
       setError("Passwords do not match");
+    } else {
+      doSingup({ username, password });
     }
 
     console.log(event);

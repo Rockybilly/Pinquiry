@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../Services/login";
 import { useStoreActions } from "easy-peasy";
 
+const md5 = require("md5");
+
 function Login({ onClickSignup }) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
