@@ -14,15 +14,15 @@ import javax.persistence.*;
 import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({@JsonSubTypes.Type(value = HTTPMonitor.class, name = "HTTP"),
-        @JsonSubTypes.Type(value = PingMonitor.class, name = "PING"),
-        @JsonSubTypes.Type(value = ContentMonitor.class, name = "CONTENT")})
+@JsonSubTypes({@JsonSubTypes.Type(value = HTTPMonitor.class, name = "http"),
+        @JsonSubTypes.Type(value = PingMonitor.class, name = "ping"),
+        @JsonSubTypes.Type(value = ContentMonitor.class, name = "content")})
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 @Entity
 public abstract class Monitor {
 
     public enum MonitorType {
-        HTTP, PING, CONTENT
+        http, ping, content
     }
 
     @Id
@@ -30,6 +30,7 @@ public abstract class Monitor {
     private Long id;
 
     private String name;
+
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -49,13 +50,12 @@ public abstract class Monitor {
     @OneToMany(mappedBy="monitor", cascade = CascadeType.ALL)
     private List<MonitorResult> results;
 
-    @ElementCollection
-    @CollectionTable(name="monitor_locations", joinColumns=@JoinColumn(name="id"))
-    @Column(name = "locations")
-    private List<String> locations;
+    @JsonProperty("monitor_location")
+    private String location;
 
 
     public Monitor() {
+
     }
 
     public Long getId() {
@@ -108,12 +108,12 @@ public abstract class Monitor {
         this.results = results;
     }
 
-    public List<String> getLocations() {
-        return locations;
+    public String getLocation() {
+        return location;
     }
 
-    public void setLocations(List<String> locations) {
-        this.locations = locations;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public String getName() {
@@ -123,4 +123,6 @@ public abstract class Monitor {
     public void setName(String name) {
         this.name = name;
     }
+
+
 }

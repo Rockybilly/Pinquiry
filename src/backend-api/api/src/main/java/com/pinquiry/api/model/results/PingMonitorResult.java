@@ -7,7 +7,6 @@ import java.sql.Timestamp;
 @Entity
 public class PingMonitorResult extends MonitorResult {
 
-    private Timestamp date;
 
     private long responseTime;
 
@@ -15,14 +14,6 @@ public class PingMonitorResult extends MonitorResult {
     private String errorString;
 
     public PingMonitorResult() {
-    }
-
-    public Timestamp getDate() {
-        return date;
-    }
-
-    public void setDate(Timestamp date) {
-        this.date = date;
     }
 
     public long getResponseTime() {
@@ -38,7 +29,7 @@ public class PingMonitorResult extends MonitorResult {
     }
 
     public void setSuccess(boolean success) {
-        this.setIncident(success);
+        this.setIncident(!success);
         this.success = success;
     }
 

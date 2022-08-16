@@ -1,10 +1,9 @@
-package com.pinquiry.api.model.rest.request;
+package com.pinquiry.api.model.rest.request.webapp;
 
 import java.io.Serializable;
 
-public class TokenRequest implements Serializable {
+public class TokenRequest{
 
-    private static final long serialVersionUID = 5926468583005150707L;
 
     private String username;
     private String password;

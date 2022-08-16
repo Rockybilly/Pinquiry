@@ -1,8 +1,12 @@
 package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.User;
+import com.pinquiry.api.model.monitor.Monitor;
 import com.pinquiry.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -17,11 +21,13 @@ public class UserService implements IUserService{
     @Autowired
     private UserRepository repository;
 
+    @Autowired
+    private ServiceWorkerService serviceWorkerService;
+
 
     @Override
-    public List<User> findAll() {
-
-        return  repository.findAll();
+    public List<User> findAll(Pageable pageable) {
+        return  repository.findAll(pageable).getContent();
     }
     @Override
     public boolean createUser(User user){
@@ -42,6 +48,10 @@ public class UserService implements IUserService{
     @Override
     public boolean deleteUser(User u){
         boolean success = true;
+        for(Monitor m: u.getMonitors()) {
+
+                serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
+        }
         try {
             repository.delete(u);
         } catch (Exception e) {
@@ -58,7 +68,9 @@ public class UserService implements IUserService{
 
     @Override
     public User findUserByUsername(String username) {
-        Optional<User> u = repository.findByUsername(username);
+        Pageable firstPageWithOneElement = PageRequest.of(0, 1);
+        Page<User> pu = repository.findByUsername(username, Pageable.unpaged());
+        Optional<User> u = pu.get().findFirst();
         return u.orElseThrow();
     }
 
@@ -83,19 +95,12 @@ public class UserService implements IUserService{
     }
 
 
-    @Override
-    public boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
-    }
-
-    @Override
-    public boolean existsByUsername(String username) {
-        return repository.existsByUsername(username);
-    }
 
 
     public int findAdmins(){
-        return repository.countByRole(User.UserRole.ADMIN);
+        Pageable firstPageWithOneElement = PageRequest.of(0, 1);
+        Page<User> pu = repository.countByRole(User.UserRole.ADMIN, Pageable.unpaged());
+        return (int) pu.getTotalElements();
     }
 
 

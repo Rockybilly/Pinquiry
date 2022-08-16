@@ -1,25 +1,26 @@
 package com.pinquiry.api.model.rest.response.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import org.hibernate.annotations.TypeDef;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitorResponse.class, name = "HTTP"),
-        @JsonSubTypes.Type(value = ServicePingMonitorResponse.class, name = "PING"),
-        @JsonSubTypes.Type(value = ServiceContentMonitorResponse.class, name = "CONTENT")})
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mon_type")
+@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitorResponse.class, name = "http"),
+        @JsonSubTypes.Type(value = ServicePingMonitorResponse.class, name = "ping"),
+        @JsonSubTypes.Type(value = ServiceContentMonitorResponse.class, name = "content")})
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 
 public abstract class ServiceMonitorResponse {
 
     public enum MonitorType {
-        HTTP, PING, CONTENT
+        http, ping, content
     }
     @JsonProperty("mon_id")
-    private long mon_id;
-    @JsonProperty("mon_type")
+    private String mon_id;
+    @JsonIgnore
     private MonitorType type;
     @JsonProperty("timeout_s")
     private int timeoutInSeconds;
@@ -29,14 +30,15 @@ public abstract class ServiceMonitorResponse {
     public ServiceMonitorResponse() {
     }
 
-    public long getMon_id() {
+    public String getMon_id() {
         return mon_id;
     }
 
-    public void setMon_id(long mon_id) {
+    public void setMon_id(String mon_id) {
         this.mon_id = mon_id;
     }
-    @JsonProperty("mon_type")
+
+    @JsonIgnore
     public MonitorType getType() {
         return type;
     }

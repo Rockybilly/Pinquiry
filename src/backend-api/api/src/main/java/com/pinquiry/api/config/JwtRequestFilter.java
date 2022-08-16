@@ -1,6 +1,7 @@
 package com.pinquiry.api.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,38 +29,53 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        if(!Objects.equals(request.getMethod(), "OPTIONS")){
+            String jwtToken = null;
 
-        String jwtToken = null;
+            final Cookie[] a = request.getCookies();
+            if (a != null) {
+                for (Cookie cookie : a) {
+                    if (Objects.equals(cookie.getName(), "jwt")) {
+                        jwtToken = cookie.getValue();
+                    }
+                }
 
-        final Cookie[] a = request.getCookies();
-        if(a!=null) {
-            for (Cookie cookie : a) {
-                if (Objects.equals(cookie.getName(), "jwt")) {
-                    jwtToken = cookie.getValue();
+                String username = null;
+
+                if (jwtToken != null) {
+                    try {
+                        username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+                    }catch (Exception e){
+                        System.out.println("asad");
+                    }
+
+                    System.out.println("a");
+                    // validating the token
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                        UserDetails userDetails = this.userDetailService.loadUserByUsername(username);
+
+                        try{
+                            jwtTokenUtil.validateToken(jwtToken, userDetails);
+                        }catch (Exception e){
+                            response.setHeader(HttpHeaders.SET_COOKIE, "jwt=null"  );
+                            return;
+                        }
+
+
+
+                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        usernamePasswordAuthenticationToken
+                                .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+                    }
                 }
             }
 
-            String username = null;
-
-            username = jwtTokenUtil.getUsernameFromToken(jwtToken);
-
-
-            // validating the token
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                UserDetails userDetails = this.userDetailService.loadUserByUsername(username);
-
-
-                if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
-
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    usernamePasswordAuthenticationToken
-                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                }
-            }
         }
+
         chain.doFilter(request, response);
     }
 

@@ -1,5 +1,6 @@
 package com.pinquiry.api.model.monitor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import org.hibernate.annotations.Parameter;
@@ -14,7 +15,7 @@ import java.util.Map;
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 public class ContentMonitorInfo {
     public enum ContentProtocolType {
-        HTTP, HTTPS
+        http, https
     }
 
     @Type( type = "enum_type")
@@ -24,6 +25,8 @@ public class ContentMonitorInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String server;
 
 
     private String uri;
@@ -35,6 +38,7 @@ public class ContentMonitorInfo {
     @MapKeyColumn(name = "request_header_key")
     private Map<String,String> RequestHeaders;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private ContentMonitor monitor;
 
@@ -76,7 +80,7 @@ public class ContentMonitorInfo {
     public void setPort(int port) {
         this.port = port;
     }
-
+    @JsonProperty("request_headers")
     public Map<String, String> getRequestHeaders() {
         return RequestHeaders;
     }
@@ -91,5 +95,13 @@ public class ContentMonitorInfo {
 
     public void setMonitor(ContentMonitor monitor) {
         this.monitor = monitor;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
     }
 }

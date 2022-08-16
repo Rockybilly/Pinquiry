@@ -29,7 +29,7 @@ public class AuthService {
     }
 
 
-    public String getUsernameFromToken(String token){
+    public String getUsernameFromToken(String token) throws Exception {
         return jwtTokenUtil.getUsernameFromToken(token);
     }
 }

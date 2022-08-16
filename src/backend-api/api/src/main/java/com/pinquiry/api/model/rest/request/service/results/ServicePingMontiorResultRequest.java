@@ -3,8 +3,6 @@ package com.pinquiry.api.model.rest.request.service.results;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ServicePingMontiorResultRequest extends ServiceMonitorResultRequest {
-    @JsonProperty("timestamp_ms")
-    private long date;
 
     @JsonProperty("response_time_ms")
     private long responseTime;
@@ -16,14 +14,6 @@ public class ServicePingMontiorResultRequest extends ServiceMonitorResultRequest
 
     public ServicePingMontiorResultRequest() {
         this.setType(ResultType.ping);
-    }
-
-    public long getDate() {
-        return date;
-    }
-
-    public void setDate(long date) {
-        this.date = date;
     }
 
     public long getResponseTime() {

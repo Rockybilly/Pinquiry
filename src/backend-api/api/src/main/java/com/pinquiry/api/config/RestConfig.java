@@ -11,6 +11,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.debug.DebugFilter;
+import org.springframework.security.web.session.SessionManagementFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -25,15 +28,21 @@ public class RestConfig {
     private JwtRequestFilter jwtRequestFilter;
 
 
+    @Bean
+    CorsFilter corsFilter() {
+        CorsFilter filter = new CorsFilter();
+        return filter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            .authenticationManager(new CustomAuthenticationManager())
 
-            .authorizeRequests().antMatchers( "/control", "/get_all_monitors", "/logout").permitAll().and()
-            .authorizeRequests().antMatchers(HttpMethod.POST, "/login", "/sign-up").permitAll().
+            .addFilterBefore(corsFilter(), SessionManagementFilter.class)
+            .authenticationManager(new CustomAuthenticationManager()).authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/**").permitAll().and()
+            .authorizeRequests().antMatchers( "/control", "/get_all_monitors", "/logout", "/get_monitors").permitAll().and()
+            .authorizeRequests().antMatchers( "/login", "/sign-up", "/add_results").permitAll().
                                 anyRequest().authenticated().and()
             .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
             .sessionManagement()

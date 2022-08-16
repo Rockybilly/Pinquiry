@@ -8,36 +8,21 @@ import java.sql.Timestamp;
 @Entity
 public class HTTPMonitorResult extends MonitorResult {
 
-    private Timestamp timestamp;
     private String serverIp;
     private long responseTime;
     private int HTTPStatusCode;
     private boolean statusCodeSuccess;
     private boolean responseHeaderSuccess;
+    private boolean searchStringSuccess;
     @OneToOne(cascade= CascadeType.ALL)
     private HTTPMonitorDebugInfo debugInfo;
 
 
+
     public HTTPMonitorResult() {
-        if(this.responseHeaderSuccess && this.statusCodeSuccess && this.debugInfo != null){
-            this.setIncident(false);
-        }
-        else{
-            this.setIncident(true);
-        }
-
-        this.setType(ResultType.HTTP);
 
     }
 
-    public Timestamp getTimestamp() {
-        System.out.println("date2");
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
 
     public String getServerIp() {
         return serverIp;
@@ -85,5 +70,24 @@ public class HTTPMonitorResult extends MonitorResult {
 
     public void setDebugInfo(HTTPMonitorDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
+    }
+
+    public boolean isSearchStringSuccess() {
+        return searchStringSuccess;
+    }
+
+    public void setSearchStringSuccess(boolean searchStringSuccess) {
+        this.searchStringSuccess = searchStringSuccess;
+    }
+
+    public void findIncident(){
+        if(this.responseHeaderSuccess && this.statusCodeSuccess && this.debugInfo == null && this.statusCodeSuccess){
+            this.setIncident(false);
+        }
+        else{
+            this.setIncident(true);
+        }
+
+        this.setType(ResultType.http);
     }
 }

@@ -1,12 +1,14 @@
-package com.pinquiry.api.model.rest.request.service;
+package com.pinquiry.api.model.rest.request.webapp.addmonitor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ServicePingMonitorRequest extends ServiceMonitorRequest {
 
+public class PingMonitorRequest extends MonitorRequest {
+    @JsonProperty("ping_ip")
     private String server;
 
-    public ServicePingMonitorRequest() {
+    public PingMonitorRequest() {
+        this.setType(MonitorType.Ping);
     }
 
     public String getServer() {

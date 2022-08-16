@@ -1,9 +1,16 @@
 package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.User;
+import com.pinquiry.api.model.monitor.ContentMonitor;
+import com.pinquiry.api.model.monitor.HTTPMonitor;
 import com.pinquiry.api.model.monitor.Monitor;
+import com.pinquiry.api.model.monitor.PingMonitor;
+import com.pinquiry.api.model.rest.TimestampResponseTime;
+import com.pinquiry.api.model.results.*;
 import com.pinquiry.api.repository.MonitorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,31 +21,72 @@ public class MonitorService implements IMonitorService {
     @Autowired
     private MonitorRepository monitorRepository;
 
-    @Autowired ServiceWorkerService serviceWorkerService;
+    @Autowired
+    private ServiceWorkerService serviceWorkerService;
 
+    @Autowired
+    private ResultService resultService;
 
     @Override
     public boolean createMonitor(User user, Monitor monitor){
         monitor.setMonUser( user );
         monitorRepository.save(monitor);
-        for(String loc: monitor.getLocations()){
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(loc, monitor, ServiceWorkerService.OperationType.ADD);
-        }
+
+        serviceWorkerService.addMonitorToServiceWorkerByLocation(monitor.getLocation(), monitor, ServiceWorkerService.OperationType.ADD);
+
         return true;
     }
     @Override
     public  boolean updateMonitor(Monitor monitor){
-       monitorRepository.save(monitor);
-        for(String loc: monitor.getLocations()){
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(loc, monitor, ServiceWorkerService.OperationType.UPDATE);
+        Monitor m = findMonitorById(monitor.getId());
+        if(m.getType() == Monitor.MonitorType.ping){
+            PingMonitor pm = (PingMonitor) m;
+            PingMonitor upm = (PingMonitor) monitor;
+            pm.setServer(upm.getServer());
+            pm.setName(upm.getName());
+            pm.setIntervalInSeconds(upm.getIntervalInSeconds());
+            pm.setTimeoutInSeconds(upm.getTimeoutInSeconds());
+            pm.setLocation(pm.getLocation());
+            monitorRepository.save(pm);
         }
+
+        if(m.getType() == Monitor.MonitorType.http){
+            HTTPMonitor hm = (HTTPMonitor) m;
+            HTTPMonitor uhm = (HTTPMonitor) monitor;
+            hm.setName(uhm.getName());
+            hm.setIntervalInSeconds(uhm.getIntervalInSeconds());
+            hm.setTimeoutInSeconds(uhm.getTimeoutInSeconds());
+            hm.setLocation(uhm.getLocation());
+
+            hm.setPort(uhm.getPort());
+            hm.setProtocol(uhm.getProtocol());
+            hm.setServer(uhm.getServer());
+            hm.setUri(uhm.getUri());
+            hm.setRequestHeaders(uhm.getRequestHeaders());
+            hm.setResponseHeaders(uhm.getResponseHeaders());
+            hm.setSuccessCodes(uhm.getSuccessCodes());
+            monitorRepository.save(hm);
+        }
+        if(m.getType() == Monitor.MonitorType.content){
+            ContentMonitor cm = (ContentMonitor) m;
+            ContentMonitor ucm = (ContentMonitor) monitor;
+            cm.setName(ucm.getName());
+            cm.setIntervalInSeconds(ucm.getIntervalInSeconds());
+            cm.setTimeoutInSeconds(ucm.getTimeoutInSeconds());
+            cm.setLocation(ucm.getLocation());
+            cm.setContentLocations(ucm.getContentLocations());
+            monitorRepository.save(cm);
+        }
+
+            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), monitor, ServiceWorkerService.OperationType.UPDATE);
+
         return true;
     }
 
     @Override
     public List<Monitor> findMonitorByUserId(User user) {
 
-        return new ArrayList<>(monitorRepository.findAllByMonUser(user));
+        return new ArrayList<>(monitorRepository.findAllByMonUser(user, Pageable.unpaged()));
     }
 
 
@@ -51,25 +99,108 @@ public class MonitorService implements IMonitorService {
     @Override
     public boolean removeMonitor(long id) {
         Monitor m;
+
         try{
             m = monitorRepository.findById(id).orElseThrow();
         }catch (Exception e){
-            e.printStackTrace();
             System.out.println("Monitor could not be found");
             return false;
         }
-        monitorRepository.delete(m);
 
-        for(String loc: m.getLocations()){
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(loc, m, ServiceWorkerService.OperationType.UPDATE);
-        }
+            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
+
+        monitorRepository.delete(m);
         return true;
     }
 
     @Override
     public List<Monitor> findMonitorByLocation(String loc) {
-        return monitorRepository.findAllByLocationsContaining(loc);
+        return monitorRepository.findAllByLocation(loc, Pageable.unpaged());
     }
+
+    public List<Monitor> findAllMonitors(){
+        return (List<Monitor>) monitorRepository.findAll();
+    }
+
+    @Override
+    public boolean getMonitorOnlineStatus(long id){
+        List<MonitorResult> lmr = resultService.findLastXResults(id, 3);
+        Monitor m = findMonitorById(id);
+        boolean online = false;
+        for( MonitorResult mr: lmr) {
+            if (m.getType() == Monitor.MonitorType.http) {
+                HTTPMonitorResult hmr = (HTTPMonitorResult) mr;
+                if(hmr.getHTTPStatusCode() != 0){
+                    online = true;
+                    break;
+                }
+            }
+            if (m.getType() == Monitor.MonitorType.ping) {
+                PingMonitorResult pmr = (PingMonitorResult) mr;
+                if(pmr.getResponseTime() != 0){
+                    online = true;
+                }
+                break;
+            }
+        }
+        return online;
+    }
+
+    @Override
+    public int getIncidentCountInTimeSpan(long id, long beginTime, long endTime){
+        Pageable p = PageRequest.of(0, 100);
+        return (int) resultService.findIncidentsInTimeSpan(id,beginTime, endTime,p, false).getTotalElements();
+    }
+
+    @Override
+    public List<TimestampResponseTime> findResponseTimesInTimeSpan(Monitor m, long begin, long end){
+        List<MonitorResult> lmr = resultService.findResultsInTimeSpan(m.getId(),begin,end).getContent();
+        List<TimestampResponseTime> r = new ArrayList<>();
+        if(m.getType() == Monitor.MonitorType.http){
+            for(MonitorResult mr: lmr){
+                HTTPMonitorResult hmr = (HTTPMonitorResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                trt.setResponseTime(hmr.getResponseTime());
+                trt.setTimestamp(hmr.getTimestamp());
+                r.add(trt);
+            }
+        }
+        if(m.getType() == Monitor.MonitorType.ping){
+            for(MonitorResult mr: lmr){
+                PingMonitorResult pmr = (PingMonitorResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                trt.setResponseTime(pmr.getResponseTime());
+                trt.setTimestamp(pmr.getTimestamp());
+                r.add(trt);
+            }
+        }
+        if(m.getType() == Monitor.MonitorType.content){
+            for(MonitorResult mr: lmr){
+                ContentMonitorEndResult cmer = (ContentMonitorEndResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                int total = 0;
+                int count = 0;
+                for(ContentMonitorResultGroup cmrg : cmer.getGroups()){
+                    for(ContentMonitorResult cmr: cmrg.getResults()){
+                        total += cmr.getResponseTime();
+                        count++;
+                    }
+                }
+
+                if(count != 0) {
+                    trt.setResponseTime((double) total / count);
+                }
+                else{
+                    trt.setResponseTime(0);
+                }
+                trt.setTimestamp(cmer.getTimestamp());
+                r.add(trt);
+            }
+        }
+        return r;
+    }
+
+
 
 
 }

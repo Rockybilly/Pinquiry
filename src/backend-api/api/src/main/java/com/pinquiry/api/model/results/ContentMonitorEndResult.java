@@ -20,7 +20,7 @@ public class ContentMonitorEndResult extends MonitorResult {
 
 
     public ContentMonitorEndResult() {
-        this.setType(ResultType.CONTENT);
+        this.setType(ResultType.content);
     }
 
     public int getNumOfGroups() {
@@ -29,12 +29,7 @@ public class ContentMonitorEndResult extends MonitorResult {
 
     public void setNumOfGroups(int numOfGroups) {
         this.numOfGroups = numOfGroups;
-        if(this.numOfGroups>1){
-            this.setIncident(true);
-        }
-        else{
-            this.setIncident(false);
-        }
+        this.setIncident(this.numOfGroups > 1);
     }
 
     public List<ContentMonitorResultGroup> getGroups() {

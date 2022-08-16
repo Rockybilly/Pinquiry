@@ -10,8 +10,7 @@ import java.util.List;
 public class ContentMonitor extends Monitor{
 
     public ContentMonitor() {
-        this.setType(MonitorType.CONTENT);
-        System.out.println("aaaasdadsa");
+        this.setType(MonitorType.content);
     }
 
     @JsonProperty("content_locations")

@@ -9,7 +9,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import javax.xml.bind.DatatypeConverter;
+import java.security.MessageDigest;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,14 +62,24 @@ public class PinquiryApiApplication  {
 			}
 			if(username != null && password != null) {
 
+				Pageable firstPageWithOneElement = PageRequest.of(0, 1);
+
 				try{
-					repository.findByUsername(username).orElseThrow(SQLDataException::new);
+					Page<User> pu = repository.findByUsername(username, Pageable.unpaged());
+					if(pu.getTotalElements() == 0){
+						User u = new User();
+						u.setUsername(username);
+						MessageDigest md = MessageDigest.getInstance("MD5");
+						md.update(password.getBytes());
+						byte[] digest = md.digest();
+						String myHash = DatatypeConverter
+								.printHexBinary(digest).toLowerCase();
+						u.setPassword(myHash);
+						u.setRole(User.UserRole.ADMIN);
+						repository.save(u);
+					}
 				}catch (Exception e){
-					User u = new User();
-					u.setUsername(username);
-					u.setPassword(password);
-					u.setRole(User.UserRole.ADMIN);
-					repository.save(u);
+					System.out.println("Could not create admin " + e.getMessage());
 				}
 
 			}

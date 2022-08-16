@@ -1,15 +1,17 @@
 package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.User;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 
 public interface IUserService {
-    List<User> findAll();
+
+
+    List<User> findAll(Pageable pageable);
+
     boolean createUser(User user);
-
-
 
     boolean deleteUser(User user);
 
@@ -21,7 +23,4 @@ public interface IUserService {
     boolean updateUser(User u);
 
 
-    boolean existsByEmail(String email);
-
-    boolean existsByUsername(String username);
 }
