@@ -1,27 +1,28 @@
-package com.pinquiry.api.model.results;
+package com.pinquiry.api.model.rest.request.service.results;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Entity;
-import java.sql.Timestamp;
+public class ServicePingMontiorResultRequest extends ServiceMonitorResultRequest {
+    @JsonProperty("timestamp_ms")
+    private long date;
 
-@Entity
-public class PingMonitorResult extends MonitorResult {
-
-    private Timestamp date;
-
+    @JsonProperty("response_time_ms")
     private long responseTime;
 
     private boolean success;
+
+    @JsonProperty("error_str")
     private String errorString;
 
-    public PingMonitorResult() {
+    public ServicePingMontiorResultRequest() {
+        this.setType(ResultType.ping);
     }
 
-    public Timestamp getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
@@ -38,7 +39,6 @@ public class PingMonitorResult extends MonitorResult {
     }
 
     public void setSuccess(boolean success) {
-        this.setIncident(success);
         this.success = success;
     }
 

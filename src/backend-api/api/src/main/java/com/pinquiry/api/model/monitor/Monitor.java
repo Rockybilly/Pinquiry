@@ -29,6 +29,8 @@ public abstract class Monitor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,8 +46,13 @@ public abstract class Monitor {
     @JsonProperty("interval_s")
     private int intervalInSeconds;
 
-    @OneToMany(mappedBy="monId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy="monitor", cascade = CascadeType.ALL)
     private List<MonitorResult> results;
+
+    @ElementCollection
+    @CollectionTable(name="monitor_locations", joinColumns=@JoinColumn(name="id"))
+    @Column(name = "locations")
+    private List<String> locations;
 
 
     public Monitor() {
@@ -94,5 +101,26 @@ public abstract class Monitor {
 
     public List<MonitorResult> getResults() {
         return results;
+    }
+
+
+    public void setResults(List<MonitorResult> results) {
+        this.results = results;
+    }
+
+    public List<String> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<String> locations) {
+        this.locations = locations;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

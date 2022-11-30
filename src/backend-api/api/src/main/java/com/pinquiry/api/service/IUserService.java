@@ -9,13 +9,16 @@ public interface IUserService {
     List<User> findAll();
     boolean createUser(User user);
 
-    boolean deleteUser(long id);
 
+
+    boolean deleteUser(User user);
 
     User findUserById(long id);
     User findUserByUsername(String username);
 
     boolean updatePassword(User u, String newPassword);
+
+    boolean updateUser(User u);
 
 
     boolean existsByEmail(String email);

@@ -1,6 +1,5 @@
 package com.pinquiry.api.model.results;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -10,13 +9,11 @@ public class HTTPMonitorDebugInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     Long id;
-    @JsonProperty("error_str")
     String errorString;
     @Type(
             type = "org.hibernate.type.SerializableToBlobType",
             parameters = { @org.hibernate.annotations.Parameter( name = "classname", value = "java.util.HashMap" ) }
     )
-    @JsonProperty("response_headers")
     Map<String,String> responseHeaders;
 
     @OneToOne(mappedBy = "debugInfo", cascade= CascadeType.ALL)
