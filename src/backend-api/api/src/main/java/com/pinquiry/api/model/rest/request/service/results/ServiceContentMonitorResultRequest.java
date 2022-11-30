@@ -1,49 +1,40 @@
-package com.pinquiry.api.model.results;
+package com.pinquiry.api.model.rest.request.service.results;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Entity
-public class ContentMonitorResult {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+import java.io.Serializable;
 
 
-    private Timestamp date;
+public class ServiceContentMonitorResultRequest implements Serializable {
+
+    @JsonProperty("timestamp_ms")
+    private long date;
 
     private String url;
 
+    @JsonProperty("server_ip")
     private String ip;
 
+    @JsonProperty("response_time_ms")
     private int responseTime;
 
+    @JsonProperty("status_code")
     private int HTTPStatusCode;
 
+    @JsonProperty("body_size")
     private int BodySizeInBytes;
 
-    @OneToOne( fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private ContentDebugInfo debugInfo;
+    @JsonProperty("debug_info")
+    private ServiceContentMonitorResultRequestDebugInfo debugInfo;
 
-
-
-
-    public ContentMonitorResult() {
+    public ServiceContentMonitorResultRequest() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Timestamp getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Timestamp date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
@@ -87,12 +78,11 @@ public class ContentMonitorResult {
         BodySizeInBytes = bodySizeInBytes;
     }
 
-    public ContentDebugInfo getDebugInfo() {
+    public ServiceContentMonitorResultRequestDebugInfo getDebugInfo() {
         return debugInfo;
     }
 
-    public void setDebugInfo(ContentDebugInfo debugInfo) {
+    public void setDebugInfo(ServiceContentMonitorResultRequestDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
     }
-
 }

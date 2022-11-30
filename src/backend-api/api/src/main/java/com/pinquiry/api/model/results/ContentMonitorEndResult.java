@@ -20,13 +20,7 @@ public class ContentMonitorEndResult extends MonitorResult {
 
 
     public ContentMonitorEndResult() {
-
-        if(this.numOfGroups>1){
-            this.setIncident(true);
-        }
-        else{
-            this.setIncident(false);
-        }
+        this.setType(ResultType.CONTENT);
     }
 
     public int getNumOfGroups() {

@@ -14,4 +14,9 @@ public interface IMonitorService {
     List<Monitor> findMonitorByUserId(User user);
 
     Monitor findMonitorById(long id);
+
+    boolean removeMonitor(long id);
+
+    List<Monitor> findMonitorByLocation(String loc);
+
 }
