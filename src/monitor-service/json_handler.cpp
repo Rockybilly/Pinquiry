@@ -310,7 +310,8 @@ JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Docum
 
         for(auto const& [k, v] : rc->response_headers){
             if (response_headers.HasMember(k)){
-                response_headers[k].SetString(std::string(response_headers.GetString()) + ", " + v, allocator);
+
+                response_headers[k].SetString(std::string(response_headers[k].GetString()) + ", " + v, allocator);
             }
             else{
                 response_headers.AddMember(rapidjson::StringRef(k), rapidjson::StringRef(v), allocator);
@@ -359,7 +360,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
 
                 for(auto const& [k, v] : g.response_headers){
                     if (response_headers.HasMember(k)){
-                        response_headers[k].SetString(std::string(response_headers.GetString()) + ", " + v, allocator);
+                        response_headers[k].SetString(std::string(response_headers[k].GetString()) + ", " + v, allocator);
                     }
                     else{
                         response_headers.AddMember(rapidjson::StringRef(k), rapidjson::StringRef(v), allocator);

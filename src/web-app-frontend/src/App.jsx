@@ -51,7 +51,7 @@ function App() {
           <Route path="add-monitor" element={<AddMonitor />} />
           <Route path="monitors" element={<Monitors />} />
           <Route path="edit-profile" element={<EditProfile />} />
-          <Route path="monitor-detail/:id" element={<MonitorDetail />} />
+          <Route path="monitor-detail/:monId" element={<MonitorDetail />} />
 
           <Route
             element={

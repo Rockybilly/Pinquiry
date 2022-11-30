@@ -10,7 +10,7 @@ import {
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import React, { useEffect, useState } from "react";
-import "antd/dist/antd.css";
+import "antd/dist/antd.min.css";
 import { Link, useLocation } from "react-router-dom";
 import AdminSecureComponent from "../../Components/AdminSecureComponent";
 import { useStoreState } from "easy-peasy";

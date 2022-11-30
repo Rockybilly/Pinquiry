@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu } from "antd";
+import { Col, Menu } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 
 export default function TopMenu({ setCurrentPage }) {
@@ -28,10 +28,15 @@ export default function TopMenu({ setCurrentPage }) {
       <Menu.Item style={{ height: "100%" }} key="1">
         Overview
       </Menu.Item>
+
       <Menu.Item style={{ height: "100%" }} key="2">
         Incident Detail
       </Menu.Item>
-      <Menu.Item style={{ height: "100%" }} key="3">
+      <Menu.Item style={{ height: "100%", width: "50%" }} key="4">
+        <Col flex={1} />
+      </Menu.Item>
+
+      <Menu.Item style={{ height: "100%", color: "#e06666" }} key="3">
         Danger Zone
       </Menu.Item>
     </Menu>

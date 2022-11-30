@@ -324,3 +324,63 @@ export async function setEmail({ email }) {
 
   return result;
 }
+
+export async function getMonIncidentCountRange({ id, begin, end, interval }) {
+  let result = [];
+  await axiosInstance
+    .get("/get-monitor-incident-counts/" + id, {
+      params: { begin, end, interval },
+    })
+    .then(function (response) {
+      result = response.data;
+    })
+    .catch(function (error) {
+      if (
+        (error?.response?.data && typeof error.response.data === "string") ||
+        error.response.data instanceof String
+      ) {
+        message.error(error.response.data);
+        throw error.response.data;
+      } else {
+        message.error(
+          "Error getting incident data count. Please consult a system administrator."
+        );
+        throw "Error getting incident data count. Please consult a system administrator.";
+      }
+    })
+    .then(function () {
+      // always executed
+    });
+
+  return result;
+}
+
+export async function getMonResponseTimeRange({ id, begin, end, interval }) {
+  let result = [];
+  await axiosInstance
+    .get("/get-monitor-response-times/" + id, {
+      params: { begin, end, interval },
+    })
+    .then(function (response) {
+      result = response.data;
+    })
+    .catch(function (error) {
+      if (
+        (error?.response?.data && typeof error.response.data === "string") ||
+        error.response.data instanceof String
+      ) {
+        message.error(error.response.data);
+        throw error.response.data;
+      } else {
+        message.error(
+          "Error getting response time data. Please consult a system administrator."
+        );
+        throw "Error getting response time data. Please consult a system administrator.";
+      }
+    })
+    .then(function () {
+      // always executed
+    });
+
+  return result;
+}

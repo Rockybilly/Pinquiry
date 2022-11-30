@@ -1,3 +1,3 @@
-export default function DangerZone() {
+export default function DangerZone(monId) {
   return <>Danger zone</>;
 }

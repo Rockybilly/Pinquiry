@@ -1,11 +1,11 @@
 import IncidentCountGraph from "./IncidentCountGraph";
 import ResponseTimeGraph from "./ResponseTimeGraph";
 
-export default function OverviewPage() {
+export default function OverviewPage({ monId }) {
   return (
     <>
-      <IncidentCountGraph />
-      <ResponseTimeGraph />
+      <IncidentCountGraph monId={monId} />
+      <ResponseTimeGraph monId={monId} />
     </>
   );
 }

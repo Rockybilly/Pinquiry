@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Col, Layout, Menu } from "antd";
 import React, { useState } from "react";
-import "antd/dist/antd.css";
+import "antd/dist/antd.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useStoreActions, useStoreState } from "easy-peasy";
 import logo from "../../static/PinquiryLogoBlue.png";
