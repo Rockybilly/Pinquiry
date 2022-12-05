@@ -16,7 +16,7 @@ class BackendClient{
 public:
 
     BackendClient(const std::string& ip, int port);
-    void report_results(MonitorObject& mon_obj, MonitorResult& mon_res);
+    void report_results(const std::string& result);
     std::vector<MonitorObject> get_monitors();
 };
 

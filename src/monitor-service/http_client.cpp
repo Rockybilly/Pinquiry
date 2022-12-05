@@ -85,6 +85,42 @@ HttpClient::Response HttpClient::head(const std::string &uri, const std::multima
     }
 }
 
+HttpClient::Response HttpClient::post_body(const std::string &uri,
+                                                 const std::multimap<std::string, std::string>& headers,
+                                                 const std::string &body) {
+    httplib::Headers hs;
+
+    for(const auto& [k, v] : headers){
+        hs.emplace(k, v);
+    }
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    auto res = client->Post(uri, hs, body, "application/json");
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>((t2 - t1)).count();
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>((t1.time_since_epoch())).count();
+
+    if(res){
+
+        std::vector<std::pair<std::string, std::string>> res_headers;
+        for(const auto& [k, v] : res->headers){
+            res_headers.emplace_back(k, v);
+        }
+
+        if (res->status == 200){
+            return {timestamp, 200, std::string(res->body), "", elapsed, res_headers};
+        }
+        else{
+            return {timestamp, res->status, "", "HTTP " + std::to_string(res->status), elapsed, res_headers};
+        }
+    }
+    else{
+        return {timestamp, 0, "", get_error_message_httplib(res.error()), elapsed, {}};
+    }
+
+}
+
 std::string HttpClient::get_error_message_httplib(httplib::Error result){
     switch (result) {
         case httplib::Error::Success:
@@ -96,7 +132,7 @@ std::string HttpClient::get_error_message_httplib(httplib::Error result){
         case httplib::Error::BindIPAddress:
             return "BindIPAddress";
         case httplib::Error::Read:
-            return "Read";
+            return "Timeout";
         case httplib::Error::Write:
             return "Write";
         case httplib::Error::ExceedRedirectCount:

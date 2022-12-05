@@ -3,7 +3,7 @@
 //
 
 #include "json_handler.h"
-
+#include <iostream>
 
 std::pair<std::string, ErrorString> json_parse_monitor_id(const std::string& body){
 
@@ -182,7 +182,7 @@ std::pair<std::vector<MonitorObject>, ErrorString> json_parse_multiple_monitors(
     std::vector<MonitorObject> result;
 
     rapidjson::Document d;
-
+    std::cout << body << std::endl;
     if (d.Parse<0>( body.c_str() ).HasParseError() ){
         return {{}, "JSON parsing error."};
     }
@@ -275,6 +275,7 @@ JsonObject json_create_ping_result(const MonitorResult* result, rapidjson::Docum
     res_obj.SetObject();
 
     res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
     res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
 
@@ -289,6 +290,7 @@ JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Docum
     res_obj.SetObject();
 
     res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("timestamp_ms", rc->timestamp_ms, allocator);
     res_obj.AddMember("server_ip", rapidjson::StringRef(rc->server_ip), allocator);
     res_obj.AddMember("response_time_ms", rc->response_time_ms, allocator);
@@ -308,7 +310,8 @@ JsonObject json_create_http_result(const MonitorResult* result, rapidjson::Docum
 
         for(auto const& [k, v] : rc->response_headers){
             if (response_headers.HasMember(k)){
-                response_headers[k].SetString(std::string(response_headers.GetString()) + ", " + v, allocator);
+
+                response_headers[k].SetString(std::string(response_headers[k].GetString()) + ", " + v, allocator);
             }
             else{
                 response_headers.AddMember(rapidjson::StringRef(k), rapidjson::StringRef(v), allocator);
@@ -327,8 +330,10 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
     rapidjson::Value res_obj;
     res_obj.SetObject();
 
-    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id.c_str()), allocator);
+    res_obj.AddMember("mon_id", rapidjson::StringRef(rc->mon_id), allocator);
+    res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("num_of_groups", rc->num_of_groups, allocator);
+    res_obj.AddMember("timestamp_ms", rc->timestamp_ms,allocator);
 
     rapidjson::Value groups_arr(rapidjson::kArrayType);
 
@@ -339,7 +344,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
             rapidjson::Value single_obj;
             single_obj.SetObject();
 
-            single_obj.AddMember("timestamp_ms", g.timestamp_ms,allocator);
+
             single_obj.AddMember("url", rapidjson::StringRef(g.url), allocator);
             single_obj.AddMember("server_ip", rapidjson::StringRef(g.server_ip), allocator);
             single_obj.AddMember("response_time_ms", g.response_time_ms, allocator);
@@ -355,7 +360,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
 
                 for(auto const& [k, v] : g.response_headers){
                     if (response_headers.HasMember(k)){
-                        response_headers[k].SetString(std::string(response_headers.GetString()) + ", " + v, allocator);
+                        response_headers[k].SetString(std::string(response_headers[k].GetString()) + ", " + v, allocator);
                     }
                     else{
                         response_headers.AddMember(rapidjson::StringRef(k), rapidjson::StringRef(v), allocator);

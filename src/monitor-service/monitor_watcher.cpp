@@ -16,12 +16,11 @@ void PingWorker::do_watch(){
     while (!stop){
         uint64_t time_begin = get_epoch_ms();
 
-
         auto res = pc.send_ping();
 
         if (res.error_st.empty()){
             report_entry(id, {mon.mon_id, res.timestamp, res.sequence, mon.moncon.timeout_s});
-            std::cout << "Sent ping: " << mon.moncon.server << ", sequence: " << res.sequence << std::endl;
+            //std::cout << "Sent ping: " << mon.moncon.server << ", id: " << id << ", sequence: " << res.sequence << std::endl;
         }
         else{
             std::cout << "Error sending ping: " << res.error_st << std::endl;
@@ -129,6 +128,7 @@ void ContentWorker::do_watch(){
 
         auto* result = new ContentResult();
 
+        result->timestamp_ms = time_begin;
         result->mon_id = mon.mon_id;
         result->mon_type = mon.mon_type;
 
@@ -141,7 +141,6 @@ void ContentWorker::do_watch(){
 
             sr.response_time_ms = r.response_time_ms;
             sr.status_code = r.status_code;
-            sr.timestamp_ms = r.timestamp_ms;
 
             sr.response_headers = std::move(r.response_headers);
             sr.url = mon.moncons[i].protocol + "://" + mon.moncons[i].server +
