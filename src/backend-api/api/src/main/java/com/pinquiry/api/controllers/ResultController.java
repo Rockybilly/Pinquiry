@@ -71,13 +71,19 @@ public class ResultController {
                     hmr.setResponseHeaderSuccess(shmrr.isResponseHeaderSuccess());
                     hmr.setResponseTime(shmrr.getResponseTime());
                     hmr.setSearchStringSuccess(shmrr.isSearchStringSucess());
+
+                    HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
                     if(shmrr.getDebugInfo() != null) {
 
-                        HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
                         hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
                         hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
 
                         hmr.setDebugInfo(hmdInfo);
+                        hmdInfo.setResult(hmr);
+
+                    }
+                    else{
+                        hmdInfo = null;
                     }
                     hmr.setMonitor(m);
                     hmr.findIncident();
@@ -137,7 +143,7 @@ public class ResultController {
                     }
                 } else {
                     PingMonitorResult pmr = new PingMonitorResult();
-
+                    pmr.setType(MonitorResult.ResultType.ping);
 
                     try {
                         monitorService.findMonitorById(smrr.getMonId());

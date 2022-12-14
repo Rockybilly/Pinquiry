@@ -19,7 +19,8 @@ import java.sql.Timestamp;
 })
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 @Entity
-public abstract class MonitorResult {
+public abstract class
+MonitorResult {
 
     public enum ResultType {
         http, content, ping

@@ -39,9 +39,10 @@ public class UserService implements IUserService{
             }
             repository
                     .save(user);
+            System.out.println("User created with username: " + user.getUsername());
             return true;
         } catch (Exception e) {
-            System.out.println("Could not save user" + e.getCause().toString());
+            System.out.println("Could not save user with " + user.getUsername() + " " + e.getCause().toString());
             return false;
         }
     }
@@ -56,8 +57,9 @@ public class UserService implements IUserService{
             repository.delete(u);
         } catch (Exception e) {
             success = false;
-            e.printStackTrace();
+            System.out.println("Could not delete user with username: " + u.getUsername() );
         }
+        System.out.println("Deleted user with username: " + u.getUsername());
         return success;
     }
     @Override
@@ -77,8 +79,8 @@ public class UserService implements IUserService{
     @Override
     public boolean updatePassword(User u, String newPassword ){
         u.setPassword(newPassword);
-        System.out.println(u.getPassword());
         repository.save(u);
+        System.out.println("User " + u.getUsername() + " password updated");
         return true;
     }
 
@@ -89,7 +91,7 @@ public class UserService implements IUserService{
                     .save(u);
             return true;
         } catch (Exception e) {
-            System.out.println("Could not update user" + e.getCause().toString());
+            System.out.println("Could not update user " + u.getUsername() + " " + e.getCause().toString());
             return false;
         }
     }

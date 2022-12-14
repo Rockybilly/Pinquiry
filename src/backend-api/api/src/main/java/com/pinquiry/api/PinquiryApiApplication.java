@@ -42,7 +42,7 @@ public class PinquiryApiApplication  {
 
 
 		return (args) -> {
-			System.out.println("In CommandLineRunnerImpl ");
+			System.out.println("Started and In CommandLineRunnerImpl ");
 			String username = null;
 			String password = null;
 
@@ -74,6 +74,7 @@ public class PinquiryApiApplication  {
 						byte[] digest = md.digest();
 						String myHash = DatatypeConverter
 								.printHexBinary(digest).toLowerCase();
+						System.out.println(myHash);
 						u.setPassword(myHash);
 						u.setRole(User.UserRole.ADMIN);
 						repository.save(u);

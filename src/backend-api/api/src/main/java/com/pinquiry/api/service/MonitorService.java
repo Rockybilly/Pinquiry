@@ -103,7 +103,7 @@ public class MonitorService implements IMonitorService {
         try{
             m = monitorRepository.findById(id).orElseThrow();
         }catch (Exception e){
-            System.out.println("Monitor could not be found");
+            System.out.println("Removing Monitor " + id +  "could not be found ");
             return false;
         }
 

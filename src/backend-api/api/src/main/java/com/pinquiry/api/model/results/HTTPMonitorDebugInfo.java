@@ -1,5 +1,6 @@
 package com.pinquiry.api.model.results;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -10,11 +11,13 @@ public class HTTPMonitorDebugInfo {
     @Id
     Long id;
     String errorString;
-    @Type(
-            type = "org.hibernate.type.SerializableToBlobType",
-            parameters = { @org.hibernate.annotations.Parameter( name = "classname", value = "java.util.HashMap" ) }
-    )
-    Map<String,String> responseHeaders;
+
+    @JsonProperty("response_headers")
+    @ElementCollection
+    @CollectionTable(name = "HttpMonitorDebugInfo_response_headers",
+            joinColumns = {@JoinColumn(name = "http_debug_info_id", referencedColumnName = "id")})
+    @MapKeyColumn(name = "http_response_header_key")
+    private Map<String,String> responseHeaders;
 
     @OneToOne(mappedBy = "debugInfo", cascade= CascadeType.ALL)
     HTTPMonitorResult result;

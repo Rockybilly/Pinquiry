@@ -102,7 +102,7 @@ public class ServiceWorkerController {
 
 
         String ip = request.getRemoteAddr();
-        System.out.println(ip);
+        System.out.println("Sending all monitors to " + ip);
 
         ServiceWorker sw = serviceWorkerService.findByIp(ip);
         List<ServiceMonitorResponse> lsmr =  new ArrayList<>();
@@ -112,7 +112,6 @@ public class ServiceWorkerController {
             Date date = new Date();
             sw.setLastActive( new Timestamp(date.getTime()));
             serviceWorkerService.addServiceWorker(sw);
-            System.out.println("asdadasdasfsadfsdfas");
             List<Monitor> lm = monitorService.findAllMonitors();
             List<Long> lmid = sw.getMonIds();
 
@@ -169,8 +168,6 @@ public class ServiceWorkerController {
 
             GetAllMonitors gam = new GetAllMonitors();
             gam.setMonitorsList(lsmr);
-
-            System.out.println(gam.getMonitorsList().size());
 
 
 

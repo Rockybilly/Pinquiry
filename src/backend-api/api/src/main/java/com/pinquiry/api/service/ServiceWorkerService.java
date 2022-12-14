@@ -37,7 +37,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
     @Override
     public void addMonitorToServiceWorkerByLocation(String loc, Monitor m, OperationType type ){
         List<ServiceWorker> lsw = repository.findAllByLocation(loc);
-
+        System.out.println("Found " + String.valueOf(lsw.size()) + " monitors with location " + loc );
         ServiceMonitorResponse smr = null;
         if(m.getType() == Monitor.MonitorType.http){
             HTTPMonitor hm = (HTTPMonitor) m;
@@ -85,11 +85,18 @@ public class ServiceWorkerService implements IServiceWorkerService{
 
                 sendMonitorToServiceWorker(sw, smr, type);
             }catch (Exception e){
+                assert smr != null;
+                System.out.println("Error on sending request to: " + sw.getName() + " : " + sw.getIp() + " monitor : " + smr.getMon_id() + "operation type " + type.name());
                 continue;
             }
             if(type == OperationType.ADD) {
                 sw.getMonIds().add(m.getId());
-                repository.save(sw);
+                try{
+                    repository.save(sw);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
             else if (type == OperationType.DELETE) {
                 sw.getMonIds().remove(m.getId());

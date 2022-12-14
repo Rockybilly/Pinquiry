@@ -46,10 +46,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     try {
                         username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                     }catch (Exception e){
-                        System.out.println("asad");
+                        System.out.println("no username with this token");
                     }
 
-                    System.out.println("a");
+
                     // validating the token
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 

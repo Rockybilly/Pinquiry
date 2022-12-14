@@ -22,10 +22,9 @@ public class ResultService implements IResultService {
     @Override
     public boolean addResult(MonitorResult result){
         try {
-            System.out.println(result.isIncident());
             repository.save(result);
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println(result.getType() + " result added" + result.getId() );
             return false;
         }
         return true;
@@ -87,6 +86,7 @@ public class ResultService implements IResultService {
     @Override
     @Transactional
     public List<TimestampResponseTime> getIResponseTimesMonitorDetailsPage(long mon_id, long begin, long end, int aggregateInterval) {
+
         List<TimestampResponseTime> ltrt = new ArrayList<>();
         if(aggregateInterval > 0) {
             long temp_end = begin + aggregateInterval;
@@ -94,7 +94,7 @@ public class ResultService implements IResultService {
 
             while (temp_end <= end) {
                 long first = -1;
-                Page<MonitorResult> pmr = repository.findAllByMonitorIdAndIncidentIsTrueAndTimestampIsBetweenOrderByTimestampAsc(mon_id, temp_begin, temp_end, Pageable.unpaged());
+                Page<MonitorResult> pmr = repository.findAllByMonitorIdAndTimestampIsBetweenOrderByTimestampAsc(mon_id, temp_begin, temp_end, Pageable.unpaged());
                 List<MonitorResult> lmr = pmr.getContent();
                 TimestampResponseTime trt = new TimestampResponseTime();
                 double total = 0;
@@ -109,8 +109,6 @@ public class ResultService implements IResultService {
 
                     }
                     if (mr.getType() == MonitorResult.ResultType.ping) {
-
-                        assert mr instanceof PingMonitorResult;
                         PingMonitorResult pingmr = (PingMonitorResult) mr;
                         total += pingmr.getResponseTime();
 
@@ -154,7 +152,7 @@ public class ResultService implements IResultService {
             }
         }
         else{
-            Page<MonitorResult> a = repository.findAllByMonitorIdAndIncidentIsTrueAndTimestampIsBetweenOrderByTimestampAsc(mon_id, begin, end, Pageable.unpaged());
+            Page<MonitorResult> a = repository.findAllByMonitorIdAndTimestampIsBetweenOrderByTimestampAsc(mon_id, begin, end, Pageable.unpaged());
 
             List<MonitorResult> lmr = a.getContent();
             for(MonitorResult mr : lmr){
@@ -168,7 +166,6 @@ public class ResultService implements IResultService {
                 }
                 if (mr.getType() == MonitorResult.ResultType.ping) {
 
-                    assert mr instanceof PingMonitorResult;
                     PingMonitorResult pingmr = (PingMonitorResult) mr;
                     trt.setResponseTime(pingmr.getResponseTime());
 
