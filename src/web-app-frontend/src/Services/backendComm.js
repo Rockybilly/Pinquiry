@@ -245,6 +245,34 @@ export async function getServices() {
   return result;
 }
 
+export async function getServicesLocations() {
+  let result = [];
+  await axiosInstance
+    .get("/list-service-workers-locations")
+    .then(function (response) {
+      result = response.data;
+    })
+    .catch(function (error) {
+      if (
+        (error?.response?.data && typeof error.response.data === "string") ||
+        error.response.data instanceof String
+      ) {
+        message.error(error.response.data);
+        throw error.response.data;
+      } else {
+        message.error(
+          "Error getting services. Please consult a system administrator."
+        );
+        throw "Error getting services. Please consult a system administrator.";
+      }
+    })
+    .then(function () {
+      // always executed
+    });
+
+  return result;
+}
+
 export async function removeService({ ip }) {
   await axiosInstance
     .post("/admin/remove-service-worker", { ip })
