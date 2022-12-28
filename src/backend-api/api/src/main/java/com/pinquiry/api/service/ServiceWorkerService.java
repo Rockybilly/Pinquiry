@@ -1,6 +1,7 @@
 package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.ServiceWorker;
+import com.pinquiry.api.model.ServiceWorkerCommunicatorEventEntry;
 import com.pinquiry.api.model.monitor.*;
 import com.pinquiry.api.model.rest.request.service.RemoveMonitorRequest;
 import com.pinquiry.api.model.rest.request.service.ServiceContentMonitorInfoRequest;
@@ -29,6 +30,9 @@ public class ServiceWorkerService implements IServiceWorkerService{
 
     @Autowired
     ServiceWorkerRepository repository;
+
+    @Autowired
+    ServiceWorkerCommunicatorController serviceWorkerCommunicatorController;
 
 
     @Value("${service.port}")
@@ -86,7 +90,8 @@ public class ServiceWorkerService implements IServiceWorkerService{
                 sendMonitorToServiceWorker(sw, smr, type);
             }catch (Exception e){
                 assert smr != null;
-                System.out.println("Error on sending request to: " + sw.getName() + " : " + sw.getIp() + " monitor : " + smr.getMon_id() + "operation type " + type.name());
+                e.printStackTrace();
+                System.out.println("\nError on sending request to: " + sw.getName() + " : " + sw.getIp() + " monitor : " + smr.getMon_id() + " operation type " + type.name());
                 continue;
             }
             if(type == OperationType.ADD) {
@@ -108,66 +113,19 @@ public class ServiceWorkerService implements IServiceWorkerService{
 
     @Override
     public void sendMonitorToServiceWorker(ServiceWorker sw, ServiceMonitorResponse m, OperationType type) {
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> result = null;
-
-        try {
-            String _url = "http://" + sw.getIp() + ":" + port;
-
-            if(type == OperationType.ADD){
-                _url = _url +  "/add_monitor";
-                URI uri = new URI(_url);
-
-
-                System.out.println(_url);
-                try {
-                    result = restTemplate.postForEntity(uri, m, String.class);
-                }catch (Exception e){
-                    System.out.println(e.getMessage());
-                    System.out.println("Could not add monitor " + m.getMon_id() + " from service worker " + sw.getIp() );
-                }
-            } else if (type == OperationType.DELETE) {
-                _url = _url + "/remove_monitor";
-                URI uri = new URI(_url);
-
-
-                System.out.println(_url);
-                RemoveMonitorRequest rmr = new RemoveMonitorRequest();
-                rmr.setMon_id(m.getMon_id());
-                try {
-                    result = restTemplate.postForEntity(uri, rmr, String.class);
-                }
-                catch (Exception e){
-                    System.out.println(e.getMessage());
-                    System.out.println("Could not remove monitor " + m.getMon_id() + " from service worker " + sw.getIp() );
-                }
-
-
-            }
-            else{
-                _url = _url + "/update_monitor";
-                URI uri = new URI(_url);
-
-
-                System.out.println(_url);
-                try {
-                    result = restTemplate.postForEntity(uri, m, String.class);
-                }catch (Exception e){
-                    System.out.println(e.getMessage());
-                    System.out.println("Could not update monitor " + m.getMon_id() + " from service worker " + sw.getIp() );
-                }
-            }
-
-            if(result != null){
-                System.out.println(result.getStatusCode());
-            }
-
-            //TODO: implement what status codes means what what to do
-
-
-        }catch (Exception e){
-            e.printStackTrace();
+        ServiceWorkerCommunicatorEventEntry event = new ServiceWorkerCommunicatorEventEntry();
+        event.setSw(sw);
+        event.setMonitor(m);
+        if(type == OperationType.ADD) {
+            event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.ADD);
         }
+        else if (type == OperationType.DELETE){
+            event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.DELETE);
+        }
+        else{
+            event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.UPDATE);
+        }
+        serviceWorkerCommunicatorController.addEvent(event);
     }
 
     @Override
@@ -176,7 +134,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
             repository.save(sw);
 
         }catch(Exception e){
-            e.printStackTrace();
+            System.out.println(e.getMessage() + " could not add " + sw.getName() + " ip: " + sw.getIp()   );
             return false;
         }
         return true;

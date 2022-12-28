@@ -93,7 +93,7 @@ public class MonitorService implements IMonitorService {
     @Override
     public  Monitor findMonitorById(long id){
 
-        return monitorRepository.findById(id).orElseThrow();
+        return monitorRepository.findById(id).orElse(null);
     }
 
     @Override

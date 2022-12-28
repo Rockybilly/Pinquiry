@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Controller
 public class ServiceWorkerController {
@@ -206,6 +203,29 @@ public class ServiceWorkerController {
         return ResponseEntity.ok().body(lassw);
 
     }
+
+    @GetMapping("/list-service-workers-locations")
+    public ResponseEntity<?> getServiceWorkersLocation(@CookieValue(name = "jwt") String token) {
+
+        String username;
+        try {
+            username = authService.getUsernameFromToken(token);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Not Authorized");
+        }
+        User u = userService.findUserByUsername(username);
+
+        List<ServiceWorker> lsw = serviceWorkerService.findAll();
+        Set<String> swl = new HashSet<>();
+        for(ServiceWorker sw: lsw){
+
+            swl.add(sw.getLocation());
+        }
+        return ResponseEntity.ok().body(swl);
+
+    }
+
+
 
 
 

@@ -45,134 +45,137 @@ public class ResultController {
         if(sw != null) {
             for (ServiceMonitorResultRequest smrr : resultList.getResults()) {
                 Monitor m  = monitorService.findMonitorById(smrr.getMonId());
-                if (smrr.getType() == ServiceMonitorResultRequest.ResultType.http) {
+                if(m != null) {
+                    if (smrr.getType() == ServiceMonitorResultRequest.ResultType.http) {
 
-                    HTTPMonitorResult hmr = new HTTPMonitorResult();
+                        HTTPMonitorResult hmr = new HTTPMonitorResult();
 
-                    ServiceHTTPMonitorResultRequest shmrr = (ServiceHTTPMonitorResultRequest) smrr;
+                        ServiceHTTPMonitorResultRequest shmrr = (ServiceHTTPMonitorResultRequest) smrr;
 
-                    try {
-                        monitorService.findMonitorById(smrr.getMonId());
-                    }catch (Exception e){
-                        System.out.println("Monitor deleted and exception");
-                        continue;
-                    }
-                    if( monitorService.findMonitorById(smrr.getMonId()) == null ){
-                        System.out.println("Monitor deleted and null");
-                        continue;
-                    }
-
-
-                    hmr.setServerIp(shmrr.getServerIp());
-                    hmr.setTimestamp(shmrr.getTimestamp());
-
-                    hmr.setHTTPStatusCode(shmrr.getStatusCode());
-                    hmr.setStatusCodeSuccess(shmrr.isStatusCodeSuccess());
-                    hmr.setResponseHeaderSuccess(shmrr.isResponseHeaderSuccess());
-                    hmr.setResponseTime(shmrr.getResponseTime());
-                    hmr.setSearchStringSuccess(shmrr.isSearchStringSucess());
-
-                    HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
-                    if(shmrr.getDebugInfo() != null) {
-
-                        hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
-                        hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
-
-                        hmr.setDebugInfo(hmdInfo);
-                        hmdInfo.setResult(hmr);
-
-                    }
-                    else{
-                        hmdInfo = null;
-                    }
-                    hmr.setMonitor(m);
-                    hmr.findIncident();
-
-                    succ = resultService.addResult(hmr);
-
-                } else if (smrr.getType() == ServiceMonitorResultRequest.ResultType.content) {
-                    ContentMonitorEndResult cmer = new ContentMonitorEndResult();
-                    ServiceContentMonitorEndResultRequest scmerr = (ServiceContentMonitorEndResultRequest) smrr;
-                    cmer.setTimestamp(scmerr.getTimestamp());
-                    try {
-                        monitorService.findMonitorById(smrr.getMonId());
-                    }catch (Exception e){
-                        System.out.println("Monitor deleted and exception");
-                        continue;
-                    }
-                    if( monitorService.findMonitorById(smrr.getMonId()) == null ){
-                        continue;
-                    }
-                    cmer.setMonitor(m);
-                    cmer.setNumOfGroups(scmerr.getNumOfGroups());
-
-                    cmer.setGroups(new ArrayList<>());
-
-                    for (int i = 0; i < scmerr.getGroups().size(); i++) {
-                        ContentMonitorResultGroup cmrg = new ContentMonitorResultGroup();
-                        cmrg.setResults(new ArrayList<>());
-                        List<ServiceContentMonitorResultRequest> a = scmerr.getGroups().get(i);
-                        for (ServiceContentMonitorResultRequest serviceContentMonitorResultRequest : a) {
-                            ContentMonitorResult cmr = new ContentMonitorResult();
-
-
-
-                            cmr.setUrl(serviceContentMonitorResultRequest.getUrl());
-                            cmr.setIp(serviceContentMonitorResultRequest.getIp());
-                            cmr.setResponseTime(serviceContentMonitorResultRequest.getResponseTime());
-                            cmr.setHTTPStatusCode(serviceContentMonitorResultRequest.getHTTPStatusCode());
-                            cmr.setBodySizeInBytes(serviceContentMonitorResultRequest.getBodySizeInBytes());
-
-                            ContentDebugInfo cdInfo = new ContentDebugInfo();
-                            if(serviceContentMonitorResultRequest.getDebugInfo() == null){
-                                cdInfo = null;
-                            }
-                            else {
-                                cdInfo.setResponseHeaders(serviceContentMonitorResultRequest.getDebugInfo().getResponseHeaders());
-                            }
-                            cmr.setDebugInfo(cdInfo);
-                            cmrg.getResults().add(cmr);
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
                         }
-                        cmer.getGroups().add(cmrg);
-                    }
-                    try {
-                        succ = resultService.addResult(cmer);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        succ = false;
-                    }
-                } else {
-                    PingMonitorResult pmr = new PingMonitorResult();
-                    pmr.setType(MonitorResult.ResultType.ping);
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            System.out.println("Monitor deleted and null");
+                            continue;
+                        }
 
-                    try {
-                        monitorService.findMonitorById(smrr.getMonId());
-                    }catch (Exception e){
-                        System.out.println("Monitor deleted and exception");
-                        continue;
-                    }
-                    if( monitorService.findMonitorById(smrr.getMonId()) == null ){
-                        continue;
-                    }
-                    pmr.setMonitor(m);
 
-                    ServicePingMontiorResultRequest spmrr = (ServicePingMontiorResultRequest) smrr;
-                    pmr.setTimestamp(spmrr.getTimestamp());
-                    pmr.setResponseTime(spmrr.getResponseTime());
+                        hmr.setServerIp(shmrr.getServerIp());
+                        hmr.setTimestamp(shmrr.getTimestamp());
 
-                    if(spmrr.getErrorString() != null && !Objects.equals(spmrr.getErrorString(), "")){
+                        hmr.setHTTPStatusCode(shmrr.getStatusCode());
+                        hmr.setStatusCodeSuccess(shmrr.isStatusCodeSuccess());
+                        hmr.setResponseHeaderSuccess(shmrr.isResponseHeaderSuccess());
+                        hmr.setResponseTime(shmrr.getResponseTime());
+                        hmr.setSearchStringSuccess(shmrr.isSearchStringSucess());
+
+                        HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
+                        if (shmrr.getDebugInfo() != null) {
+
+                            hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
+                            hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
+
+                            hmr.setDebugInfo(hmdInfo);
+                            hmdInfo.setResult(hmr);
+
+                        } else {
+                            hmdInfo = null;
+                        }
+                        hmr.setMonitor(m);
+                        hmr.findIncident();
+
+                        succ = resultService.addResult(hmr);
+
+                    } else if (smrr.getType() == ServiceMonitorResultRequest.ResultType.content) {
+                        ContentMonitorEndResult cmer = new ContentMonitorEndResult();
+                        ServiceContentMonitorEndResultRequest scmerr = (ServiceContentMonitorEndResultRequest) smrr;
+                        cmer.setTimestamp(scmerr.getTimestamp());
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
+                        }
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            continue;
+                        }
+                        cmer.setMonitor(m);
+                        cmer.setNumOfGroups(scmerr.getNumOfGroups());
+
+                        cmer.setGroups(new ArrayList<>());
+
+                        for (int i = 0; i < scmerr.getGroups().size(); i++) {
+                            ContentMonitorResultGroup cmrg = new ContentMonitorResultGroup();
+                            cmrg.setResults(new ArrayList<>());
+                            List<ServiceContentMonitorResultRequest> a = scmerr.getGroups().get(i);
+                            for (ServiceContentMonitorResultRequest serviceContentMonitorResultRequest : a) {
+                                ContentMonitorResult cmr = new ContentMonitorResult();
+
+
+                                cmr.setUrl(serviceContentMonitorResultRequest.getUrl());
+                                cmr.setIp(serviceContentMonitorResultRequest.getIp());
+                                cmr.setResponseTime(serviceContentMonitorResultRequest.getResponseTime());
+                                cmr.setHTTPStatusCode(serviceContentMonitorResultRequest.getHTTPStatusCode());
+                                cmr.setBodySizeInBytes(serviceContentMonitorResultRequest.getBodySizeInBytes());
+
+                                ContentDebugInfo cdInfo = new ContentDebugInfo();
+                                if (serviceContentMonitorResultRequest.getDebugInfo() == null) {
+                                    cdInfo = null;
+                                } else {
+                                    cdInfo.setResponseHeaders(serviceContentMonitorResultRequest.getDebugInfo().getResponseHeaders());
+                                }
+                                cmr.setDebugInfo(cdInfo);
+                                cmrg.getResults().add(cmr);
+                            }
+                            cmer.getGroups().add(cmrg);
+                        }
+                        try {
+                            succ = resultService.addResult(cmer);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            succ = false;
+                        }
+                    } else {
+                        PingMonitorResult pmr = new PingMonitorResult();
+                        pmr.setType(MonitorResult.ResultType.ping);
+
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
+                        }
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            continue;
+                        }
+                        pmr.setMonitor(m);
+
+                        ServicePingMontiorResultRequest spmrr = (ServicePingMontiorResultRequest) smrr;
+                        pmr.setTimestamp(spmrr.getTimestamp());
+                        pmr.setResponseTime(spmrr.getResponseTime());
+
+                        if (spmrr.getErrorString() != null && !Objects.equals(spmrr.getErrorString(), "")) {
+                            pmr.setErrorString(spmrr.getErrorString());
+                            pmr.setSuccess(false);
+                        }
                         pmr.setErrorString(spmrr.getErrorString());
-                        pmr.setSuccess(false);
+
+                        succ = resultService.addResult(pmr);
                     }
-                    pmr.setErrorString(spmrr.getErrorString());
 
-                    succ = resultService.addResult(pmr);
+
+                    if (succ)
+                        System.out.println(smrr.getMonId() + " saved ");
+                    else
+                        System.out.println(smrr.getMonId() + " could not be saved ");
                 }
-
-                if (succ)
-                    System.out.println(smrr.getMonId() + " saved ");
-                else
-                    System.out.println(smrr.getMonId() + " could not be saved ");
+                else{
+                    System.out.println(smrr.getMonId() + " could not be found ");
+                }
             }
         }
 
