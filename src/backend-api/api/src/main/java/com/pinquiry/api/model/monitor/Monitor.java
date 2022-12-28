@@ -39,7 +39,7 @@ public abstract class Monitor {
 
 
     private int unacknowledgedIncidentCount;
-    @Column(name="acknowledgement_threshold", columnDefinition="integer default '5'")
+    @Column(name="acknowledgement_threshold", columnDefinition="integer default 5")
     private int acknowledgementThreshold;
 
 

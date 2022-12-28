@@ -28,14 +28,14 @@ public class HTTPMonitor extends Monitor{
     private String uri;
     private int port;
     @JsonProperty("request_headers")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "HTTPMonitor_request_headers",
             joinColumns = {@JoinColumn(name = "http_monitor_id", referencedColumnName = "id")})
     @MapKeyColumn(name = "request_header_key")
     private Map<String,String> RequestHeaders;
 
     @JsonProperty("success_headers")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "HTTPMonitor_response_headers",
             joinColumns = {@JoinColumn(name = "http_monitor_id", referencedColumnName = "id")})
     @MapKeyColumn(name = "response_header_key")
@@ -43,7 +43,7 @@ public class HTTPMonitor extends Monitor{
 
 
     @JsonProperty("success_codes")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="success_codes", joinColumns=@JoinColumn(name="id"))
     @Column(name = "success_code")
     private List<Integer> successCodes;

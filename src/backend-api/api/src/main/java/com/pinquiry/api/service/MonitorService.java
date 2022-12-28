@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class MonitorService implements IMonitorService {
 
@@ -78,7 +80,7 @@ public class MonitorService implements IMonitorService {
             monitorRepository.save(cm);
         }
 
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), monitor, ServiceWorkerService.OperationType.UPDATE);
+            //serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), monitor, ServiceWorkerService.OperationType.UPDATE);
 
         return true;
     }
@@ -124,8 +126,9 @@ public class MonitorService implements IMonitorService {
 
     @Override
     public boolean getMonitorOnlineStatus(long id){
-        List<MonitorResult> lmr = resultService.findLastXResults(id, 3);
         Monitor m = findMonitorById(id);
+        List<MonitorResult> lmr = resultService.findLastXResults(id, 10 * m.getIntervalInSeconds());
+
         boolean online = false;
         for( MonitorResult mr: lmr) {
             if (m.getType() == Monitor.MonitorType.http) {
@@ -137,7 +140,7 @@ public class MonitorService implements IMonitorService {
             }
             if (m.getType() == Monitor.MonitorType.ping) {
                 PingMonitorResult pmr = (PingMonitorResult) mr;
-                if(pmr.getResponseTime() != 0){
+                if(pmr.getErrorString() != null){
                     online = true;
                 }
                 break;

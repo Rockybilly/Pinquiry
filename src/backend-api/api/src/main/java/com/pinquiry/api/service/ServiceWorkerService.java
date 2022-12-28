@@ -50,7 +50,7 @@ public class ServiceWorkerService implements IServiceWorkerService{
     @Override
     public void addMonitorToServiceWorkerByLocation(String loc, Monitor m, OperationType type ){
         List<ServiceWorker> lsw = repository.findAllByLocation(loc);
-        System.out.println("Found " + String.valueOf(lsw.size()) + " monitors with location " + loc );
+        System.out.println("Found " + String.valueOf(lsw.size()) + " workers with location " + loc );
         ServiceMonitorResponse smr = null;
         if(m.getType() == Monitor.MonitorType.http){
             HTTPMonitor hm = (HTTPMonitor) m;
@@ -116,6 +116,9 @@ public class ServiceWorkerService implements IServiceWorkerService{
                 sw.getMonIds().remove(m.getId());
                 repository.save(sw);
             }
+            else if(type == OperationType.UPDATE){
+                repository.save(sw);
+            }
         }
 
     }
@@ -131,7 +134,8 @@ public class ServiceWorkerService implements IServiceWorkerService{
         else if (type == OperationType.DELETE){
             event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.DELETE);
         }
-        else{
+       else if (type == OperationType.UPDATE){
+           System.out.println("update aq");
             event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.UPDATE);
         }
         serviceWorkerCommunicatorController.addEvent(event);

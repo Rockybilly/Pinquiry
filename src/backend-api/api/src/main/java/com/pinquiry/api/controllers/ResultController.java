@@ -189,7 +189,6 @@ public class ResultController {
 
                         succ = resultService.addResult(pmr);
                     }
-                    monitorService.updateMonitor(m);
 
                     if (succ)
                         System.out.println(smrr.getMonId() + " saved ");

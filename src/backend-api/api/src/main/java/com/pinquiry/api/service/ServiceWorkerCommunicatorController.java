@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Service
@@ -14,7 +15,7 @@ public class ServiceWorkerCommunicatorController {
     private final List<ServiceWorkerCommunicator> lswc;
 
     private int threadCount = 8;
-    private ConcurrentLinkedQueue<ServiceWorkerCommunicatorEventEntry> lswcee;
+    private Stack<ServiceWorkerCommunicatorEventEntry> lswcee;
 
     @Value("${service.port}")
     int port;
@@ -24,7 +25,7 @@ public class ServiceWorkerCommunicatorController {
 
     public ServiceWorkerCommunicatorController() {
         this.lswc = new ArrayList<>();
-        this.lswcee = new ConcurrentLinkedQueue<>();
+        this.lswcee = new Stack<>();
         init();
     }
 
@@ -36,9 +37,9 @@ public class ServiceWorkerCommunicatorController {
         }
     }
 
-    public boolean addEvent(ServiceWorkerCommunicatorEventEntry event){
+    public synchronized boolean addEvent(ServiceWorkerCommunicatorEventEntry event){
         try {
-            lswcee.add(event);
+            lswcee.push(event);
         }catch (Exception e){
             System.out.println("Could not add event to queue");
             return false;
@@ -47,7 +48,10 @@ public class ServiceWorkerCommunicatorController {
     }
 
     public synchronized ServiceWorkerCommunicatorEventEntry getEntry(){
-        return lswcee.poll();
+        if(lswcee.empty()){
+            return null;
+        }
+        return lswcee.pop();
     }
 
 
