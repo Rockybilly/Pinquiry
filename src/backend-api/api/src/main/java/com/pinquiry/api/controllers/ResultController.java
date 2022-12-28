@@ -1,20 +1,18 @@
 package com.pinquiry.api.controllers;
 
+import com.pinquiry.api.model.ServiceWorker;
+import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.monitor.Monitor;
 import com.pinquiry.api.model.rest.request.service.results.*;
 import com.pinquiry.api.model.results.*;
-import com.pinquiry.api.service.MonitorService;
-import com.pinquiry.api.service.ResultService;
+import com.pinquiry.api.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 @Controller
 public class ResultController {
@@ -24,117 +22,250 @@ public class ResultController {
     @Autowired
     MonitorService monitorService;
 
-    @PostMapping("/add-results")
-    public ResponseEntity<String> addResults(@RequestBody ServiceMonitorResultListRequest resultList){
+    @Autowired
+    ServiceWorkerService serviceWorkerService;
+
+    @Autowired
+    UserService userService;
+
+
+    @Autowired
+    AuthService authService;
+
+    @PostMapping("/add_results")
+    public ResponseEntity<String> addResults(@RequestBody ServiceMonitorResultListRequest resultList, HttpServletRequest request){
 
         boolean succ;
-        //TODO: ipcheck
+        String ip = request.getRemoteAddr();
+
+        ServiceWorker sw = serviceWorkerService.findByIp(ip);
 
 
 
-        for(ServiceMonitorResultRequest smrr: resultList.getResults()){
-            if(smrr.getType() == ServiceMonitorResultRequest.ResultType.http){
-                HTTPMonitorResult hmr = new HTTPMonitorResult();
+        if(sw != null) {
+            for (ServiceMonitorResultRequest smrr : resultList.getResults()) {
+                Monitor m  = monitorService.findMonitorById(smrr.getMonId());
+                if(m != null) {
+                    if (smrr.getType() == ServiceMonitorResultRequest.ResultType.http) {
 
-                ServiceHTTPMonitorResultRequest shmrr = (ServiceHTTPMonitorResultRequest) smrr;
-                hmr.setMonitor(monitorService.findMonitorById(smrr.getMonId()));
+                        HTTPMonitorResult hmr = new HTTPMonitorResult();
 
-                Instant instant = Instant.ofEpochSecond(shmrr.getTimestampInMilliSeconds());
-                hmr.setTimestamp(Timestamp.from(instant));
+                        ServiceHTTPMonitorResultRequest shmrr = (ServiceHTTPMonitorResultRequest) smrr;
 
-                hmr.setServerIp(shmrr.getServerIp());
-                hmr.setResponseTime(shmrr.getResponseTimeInMilliSeconds());
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
+                        }
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            System.out.println("Monitor deleted and null");
+                            continue;
+                        }
 
-                hmr.setHTTPStatusCode(shmrr.getStatusCode());
-                hmr.setStatusCodeSuccess(shmrr.isStatusCodeSuccess());
-                hmr.setResponseHeaderSuccess(shmrr.isResponseHeaderSuccess());
 
-                HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
-                hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
-                hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
+                        hmr.setServerIp(shmrr.getServerIp());
+                        hmr.setTimestamp(shmrr.getTimestamp());
 
-                hmr.setDebugInfo(hmdInfo);
+                        hmr.setHTTPStatusCode(shmrr.getStatusCode());
+                        hmr.setStatusCodeSuccess(shmrr.isStatusCodeSuccess());
+                        hmr.setResponseHeaderSuccess(shmrr.isResponseHeaderSuccess());
+                        hmr.setResponseTime(shmrr.getResponseTime());
+                        hmr.setSearchStringSuccess(shmrr.isSearchStringSucess());
 
-                succ = resultService.addResult(hmr);
+                        HTTPMonitorDebugInfo hmdInfo = new HTTPMonitorDebugInfo();
+                        if (shmrr.getDebugInfo() != null) {
 
-            }
-            else if(smrr.getType() == ServiceMonitorResultRequest.ResultType.content){
-                ContentMonitorEndResult cmer = new ContentMonitorEndResult();
-                ServiceContentMonitorEndResultRequest scmerr = (ServiceContentMonitorEndResultRequest) smrr;
-                System.out.println(monitorService.findMonitorById(smrr.getMonId()).getId());
-                cmer.setMonitor(monitorService.findMonitorById(smrr.getMonId()));
-                cmer.setNumOfGroups(scmerr.getNumOfGroups());
+                            hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
+                            hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
 
-                cmer.setGroups(new ArrayList<>());
+                            hmr.setDebugInfo(hmdInfo);
+                            hmdInfo.setResult(hmr);
 
-                for(int i=0; i<scmerr.getGroups().size(); i++){
-                    ContentMonitorResultGroup cmrg = new ContentMonitorResultGroup();
-                    cmrg.setResults(new ArrayList<>());
-                    List<ServiceContentMonitorResultRequest> a = scmerr.getGroups().get(i);
-                    for (ServiceContentMonitorResultRequest serviceContentMonitorResultRequest : a) {
-                        ContentMonitorResult cmr = new ContentMonitorResult();
+                        } else {
+                            hmdInfo = null;
+                        }
+                        hmr.setMonitor(m);
+                        hmr.findIncident();
 
-                        Instant instant = Instant.ofEpochSecond(serviceContentMonitorResultRequest.getDate());
-                        cmr.setDate(Timestamp.from(instant));
+                        succ = resultService.addResult(hmr);
 
-                        cmr.setUrl(serviceContentMonitorResultRequest.getUrl());
-                        cmr.setIp(serviceContentMonitorResultRequest.getIp());
-                        cmr.setResponseTime(serviceContentMonitorResultRequest.getResponseTime());
-                        cmr.setHTTPStatusCode(serviceContentMonitorResultRequest.getHTTPStatusCode());
-                        cmr.setBodySizeInBytes(serviceContentMonitorResultRequest.getBodySizeInBytes());
+                    } else if (smrr.getType() == ServiceMonitorResultRequest.ResultType.content) {
+                        ContentMonitorEndResult cmer = new ContentMonitorEndResult();
+                        ServiceContentMonitorEndResultRequest scmerr = (ServiceContentMonitorEndResultRequest) smrr;
+                        cmer.setTimestamp(scmerr.getTimestamp());
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
+                        }
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            continue;
+                        }
+                        cmer.setMonitor(m);
+                        cmer.setNumOfGroups(scmerr.getNumOfGroups());
 
-                        ContentDebugInfo cdInfo = new ContentDebugInfo();
-                        cdInfo.setResponseHeaders(serviceContentMonitorResultRequest.getDebugInfo().getResponseHeaders());
+                        cmer.setGroups(new ArrayList<>());
 
-                        cmr.setDebugInfo(cdInfo);
-                        cmrg.getResults().add(cmr);
+                        for (int i = 0; i < scmerr.getGroups().size(); i++) {
+                            ContentMonitorResultGroup cmrg = new ContentMonitorResultGroup();
+                            cmrg.setResults(new ArrayList<>());
+                            List<ServiceContentMonitorResultRequest> a = scmerr.getGroups().get(i);
+                            for (ServiceContentMonitorResultRequest serviceContentMonitorResultRequest : a) {
+                                ContentMonitorResult cmr = new ContentMonitorResult();
+
+
+                                cmr.setUrl(serviceContentMonitorResultRequest.getUrl());
+                                cmr.setIp(serviceContentMonitorResultRequest.getIp());
+                                cmr.setResponseTime(serviceContentMonitorResultRequest.getResponseTime());
+                                cmr.setHTTPStatusCode(serviceContentMonitorResultRequest.getHTTPStatusCode());
+                                cmr.setBodySizeInBytes(serviceContentMonitorResultRequest.getBodySizeInBytes());
+
+                                ContentDebugInfo cdInfo = new ContentDebugInfo();
+                                if (serviceContentMonitorResultRequest.getDebugInfo() == null) {
+                                    cdInfo = null;
+                                } else {
+                                    cdInfo.setResponseHeaders(serviceContentMonitorResultRequest.getDebugInfo().getResponseHeaders());
+                                }
+                                cmr.setDebugInfo(cdInfo);
+                                cmrg.getResults().add(cmr);
+                            }
+                            cmer.getGroups().add(cmrg);
+                        }
+                        try {
+                            succ = resultService.addResult(cmer);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            succ = false;
+                        }
+                    } else {
+                        PingMonitorResult pmr = new PingMonitorResult();
+                        pmr.setType(MonitorResult.ResultType.ping);
+
+                        try {
+                            monitorService.findMonitorById(smrr.getMonId());
+                        } catch (Exception e) {
+                            System.out.println("Monitor deleted and exception");
+                            continue;
+                        }
+                        if (monitorService.findMonitorById(smrr.getMonId()) == null) {
+                            continue;
+                        }
+                        pmr.setMonitor(m);
+
+                        ServicePingMontiorResultRequest spmrr = (ServicePingMontiorResultRequest) smrr;
+                        pmr.setTimestamp(spmrr.getTimestamp());
+                        pmr.setResponseTime(spmrr.getResponseTime());
+
+                        if (spmrr.getErrorString() != null && !Objects.equals(spmrr.getErrorString(), "")) {
+                            pmr.setErrorString(spmrr.getErrorString());
+                            pmr.setSuccess(false);
+                        }
+                        pmr.setErrorString(spmrr.getErrorString());
+
+                        succ = resultService.addResult(pmr);
                     }
-                    cmer.getGroups().add(cmrg);
+
+
+                    if (succ)
+                        System.out.println(smrr.getMonId() + " saved ");
+                    else
+                        System.out.println(smrr.getMonId() + " could not be saved ");
                 }
-                try {
-                    succ = resultService.addResult(cmer);
-                }catch (Exception e){
-                    e.printStackTrace();
-                    succ = false;
+                else{
+                    System.out.println(smrr.getMonId() + " could not be found ");
                 }
             }
-            else{
-                PingMonitorResult pmr = new PingMonitorResult();
-
-                pmr.setMonId(smrr.getMonId());
-                pmr.setMonitor(monitorService.findMonitorById(pmr.getMonId()));
-
-                ServicePingMontiorResultRequest spmrr = (ServicePingMontiorResultRequest) smrr;
-                Instant instant = Instant.ofEpochSecond(spmrr.getDate());
-                pmr.setDate(Timestamp.from(instant));
-                pmr.setResponseTime(spmrr.getResponseTime());
-                pmr.setSuccess(spmrr.isSuccess());
-                pmr.setErrorString(spmrr.getErrorString());
-
-                succ = resultService.addResult(pmr);
-            }
-
-            if(succ)
-                System.out.println(smrr.getMonId() + " saved ");
-            else
-                System.out.println(smrr.getMonId() + " could not be saved ");
         }
 
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/get-results")
-    public ResponseEntity<List<MonitorResult>> getResults(@RequestBody long mon_id){
 
-        Monitor m = monitorService.findMonitorById(mon_id);
-        List<MonitorResult> lmr =  m.getResults();
-        return ResponseEntity.ok().body(lmr);
+    @GetMapping("/get-monitor-incident-counts/{id}")
+    public ResponseEntity<?> getIncidentsMonitorDetailsPage(@CookieValue(name = "jwt") String token,
+                                                            @PathVariable("id") long mon_id,
+                                                            @RequestParam("begin") long begin,
+                                                            @RequestParam("end") long end,
+                                                            @RequestParam("interval") int aggregateInterval
+                                                           ){
+
+
+        String username = null;
+        try {
+            username = authService.getUsernameFromToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        User u = userService.findUserByUsername(username);
+
+        List<Monitor> lm;
+
+        try {
+            lm = monitorService.findMonitorByUserId(u);
+        }catch (Exception e){
+            System.out.println("No monitors");
+            return ResponseEntity.ok().body(new ArrayList<>());
+        }
+        boolean found = false;
+        for(Monitor m: lm){
+            if(m.getId() == mon_id){
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            return ResponseEntity.status(412).body("Monitor could not be found");
+        }
+
+        return ResponseEntity.ok().body(resultService.getIncidentsMonitorDetailsPage(mon_id, begin, end, aggregateInterval));
+
+
     }
 
-    @PostMapping("/get-incidents")
-    public ResponseEntity<List<MonitorResult>> getIncidents(@RequestBody long mon_id){
-        return ResponseEntity.ok().body(resultService.findIncidents(mon_id));
+    @GetMapping("/get-monitor-response-times/{id}")
+    public ResponseEntity<?> getResponseTimesMonitorDetailsPage(@CookieValue(name = "jwt") String token,
+                                                            @PathVariable("id") long mon_id,
+                                                            @RequestParam("begin") long begin,
+                                                            @RequestParam("end") long end,
+                                                            @RequestParam("interval") int aggregateInterval
+    ){
+
+
+        String username = null;
+        try {
+            username = authService.getUsernameFromToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        User u = userService.findUserByUsername(username);
+
+        List<Monitor> lm;
+
+        try {
+            lm = monitorService.findMonitorByUserId(u);
+        }catch (Exception e){
+            System.out.println("No monitors");
+            return ResponseEntity.ok().body(new ArrayList<>());
+        }
+
+        boolean found = false;
+        for(Monitor m: lm){
+            if(m.getId() == mon_id){
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            return ResponseEntity.status(412).body("Monitor could not be found");
+        }
+
+        return ResponseEntity.ok().body(resultService.getIResponseTimesMonitorDetailsPage(mon_id, begin, end, aggregateInterval));
+
+
     }
+
 
 
 }

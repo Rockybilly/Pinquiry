@@ -4,6 +4,7 @@ import com.pinquiry.api.model.monitor.Monitor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class User {
     public enum UserRole {
         ADMIN, USER
     }
-
+    @NotNull
     private String username;
     @Column(name = "user_password")
     private String password;

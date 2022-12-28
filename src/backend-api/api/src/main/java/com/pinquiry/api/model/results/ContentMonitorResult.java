@@ -9,9 +9,6 @@ public class ContentMonitorResult {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-
-    private Timestamp date;
-
     private String url;
 
     private String ip;
@@ -37,14 +34,6 @@ public class ContentMonitorResult {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Timestamp getDate() {
-        return date;
-    }
-
-    public void setDate(Timestamp date) {
-        this.date = date;
     }
 
     public String getUrl() {

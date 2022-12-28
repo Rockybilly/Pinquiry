@@ -7,9 +7,6 @@ import java.io.Serializable;
 
 public class ServiceContentMonitorResultRequest implements Serializable {
 
-    @JsonProperty("timestamp_ms")
-    private long date;
-
     private String url;
 
     @JsonProperty("server_ip")
@@ -28,14 +25,6 @@ public class ServiceContentMonitorResultRequest implements Serializable {
     private ServiceContentMonitorResultRequestDebugInfo debugInfo;
 
     public ServiceContentMonitorResultRequest() {
-    }
-
-    public long getDate() {
-        return date;
-    }
-
-    public void setDate(long date) {
-        this.date = date;
     }
 
     public String getUrl() {

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.*;
 
 public class UserMonitorListResponse {
+
+    private int totalMonitorSize;
     private List<UserMonitorListResponseMonitor> monitors;
 
     public UserMonitorListResponse() {
@@ -19,5 +21,13 @@ public class UserMonitorListResponse {
 
     public void setMonitors(List<UserMonitorListResponseMonitor> monitors) {
         this.monitors = monitors;
+    }
+
+    public int getTotalMonitorSize() {
+        return totalMonitorSize;
+    }
+
+    public void setTotalMonitorSize(int totalMonitorSize) {
+        this.totalMonitorSize = totalMonitorSize;
     }
 }

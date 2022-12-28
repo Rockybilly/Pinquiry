@@ -15,7 +15,7 @@ import java.util.Map;
 @Entity
 public class HTTPMonitor extends Monitor{
     public enum ProtocolType {
-        HTTP, HTTPS
+        http, https
     }
 
     @Type( type = "enum_type")
@@ -48,8 +48,11 @@ public class HTTPMonitor extends Monitor{
     @Column(name = "success_code")
     private List<Integer> successCodes;
 
+    @JsonProperty("search_string")
+    private String searchString;
+
     public HTTPMonitor() {
-        this.setType(MonitorType.HTTP);
+        this.setType(MonitorType.http);
     }
 
     public ProtocolType getProtocol() {
@@ -106,5 +109,13 @@ public class HTTPMonitor extends Monitor{
 
     public void setServer(String server) {
         this.server = server;
+    }
+
+    public String getSearchString() {
+        return searchString;
+    }
+
+    public void setSearchString(String searchString) {
+        this.searchString = searchString;
     }
 }

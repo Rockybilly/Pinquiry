@@ -10,23 +10,28 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({@JsonSubTypes.Type(value = HTTPMonitorResult.class, name = "HTTP"),
-        @JsonSubTypes.Type(value = ContentMonitorEndResult.class, name = "CONTENT")})
+@JsonSubTypes({@JsonSubTypes.Type(value = HTTPMonitorResult.class, name = "http"),
+        @JsonSubTypes.Type(value = ContentMonitorEndResult.class, name = "content"),
+        @JsonSubTypes.Type(value = PingMonitorResult.class, name = "ping")
+})
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 @Entity
-public abstract class MonitorResult {
+public abstract class
+MonitorResult {
 
     public enum ResultType {
-        HTTP, CONTENT
+        http, content, ping
     }
 
     @Type( type = "enum_type")
     @Enumerated(EnumType.STRING)
     private ResultType type;
 
-    @JsonProperty("mon_id")
-    private long monId;
+    private long timestamp;
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,14 +52,6 @@ public abstract class MonitorResult {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public long getMonId() {
-        return monId;
-    }
-
-    public void setMonId(long monId) {
-        this.monId = monId;
     }
 
     public Monitor getMonitor() {
@@ -79,5 +76,13 @@ public abstract class MonitorResult {
 
     public void setType(ResultType type) {
         this.type = type;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 }

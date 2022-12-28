@@ -7,15 +7,15 @@ import com.pinquiry.api.model.PostgreSQLEnumType;
 import org.hibernate.annotations.TypeDef;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitorRequest.class, name = "HTTP"),
-        @JsonSubTypes.Type(value = ServicePingMonitorRequest.class, name = "PING"),
-        @JsonSubTypes.Type(value = ServiceContentMonitorRequest.class, name = "CONTENT")})
+@JsonSubTypes({@JsonSubTypes.Type(value = ServiceHTTPMonitorRequest.class, name = "http"),
+        @JsonSubTypes.Type(value = ServicePingMonitorRequest.class, name = "ping"),
+        @JsonSubTypes.Type(value = ServiceContentMonitorRequest.class, name = "content")})
 @TypeDef(name = "enum_type", typeClass = PostgreSQLEnumType.class)
 
 public abstract class ServiceMonitorRequest {
 
     public enum MonitorType {
-        HTTP, PING, CONTENT
+        http, ping, content
     }
     @JsonProperty("mon_id")
     private long mon_id;

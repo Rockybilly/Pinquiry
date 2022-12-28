@@ -2,6 +2,7 @@ package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.monitor.Monitor;
+import com.pinquiry.api.model.rest.TimestampResponseTime;
 
 import java.util.List;
 
@@ -19,4 +20,9 @@ public interface IMonitorService {
 
     List<Monitor> findMonitorByLocation(String loc);
 
+    boolean getMonitorOnlineStatus(long id);
+
+    int getIncidentCountInTimeSpan(long id, long beginTime, long endTime);
+
+    List<TimestampResponseTime> findResponseTimesInTimeSpan(Monitor m, long begin, long end);
 }

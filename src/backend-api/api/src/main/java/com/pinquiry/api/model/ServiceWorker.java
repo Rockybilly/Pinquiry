@@ -1,5 +1,7 @@
 package com.pinquiry.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -16,10 +18,15 @@ public class ServiceWorker {
 
     private String ip;
 
+    private String name;
+
+    private int port;
+
     private Timestamp lastActive;
 
     private boolean active;
 
+    @JsonProperty("countryCode")
     private String location;
 
     @ElementCollection
@@ -75,5 +82,21 @@ public class ServiceWorker {
 
     public void setMonIds(List<Long> monIds) {
         this.monIds = monIds;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }

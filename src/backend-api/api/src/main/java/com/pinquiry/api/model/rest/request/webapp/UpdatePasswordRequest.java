@@ -1,4 +1,4 @@
-package com.pinquiry.api.model.rest.request;
+package com.pinquiry.api.model.rest.request.webapp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -4,14 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ServiceHTTPMonitorResultRequest extends ServiceMonitorResultRequest{
 
-    @JsonProperty("timestamp_ms")
-    private long timestampInMilliSeconds;
-
     @JsonProperty("server_ip")
     private String serverIp;
-
-    @JsonProperty("response_time_ms")
-    private long responseTimeInMilliSeconds;
 
     @JsonProperty("status_code")
     private int statusCode;
@@ -25,25 +19,15 @@ public class ServiceHTTPMonitorResultRequest extends ServiceMonitorResultRequest
     @JsonProperty("debug_info")
     private ServiceHTTPMonitorResultRequestDebugInfo debugInfo;
 
+    @JsonProperty("response_time_ms")
+    private Long responseTime;
+
+    @JsonProperty("search_string_success")
+    private boolean searchStringSucess;
+
 
     public ServiceHTTPMonitorResultRequest() {
         this.setType(ResultType.http);
-    }
-
-    public long getTimestampInMilliSeconds() {
-        return timestampInMilliSeconds;
-    }
-
-    public void setTimestampInMilliSeconds(long timestampInMilliSeconds) {
-        this.timestampInMilliSeconds = timestampInMilliSeconds;
-    }
-
-    public long getResponseTimeInMilliSeconds() {
-        return responseTimeInMilliSeconds;
-    }
-
-    public void setResponseTimeInMilliSeconds(long responseTimeInMilliSeconds) {
-        this.responseTimeInMilliSeconds = responseTimeInMilliSeconds;
     }
 
     public int getStatusCode() {
@@ -84,5 +68,21 @@ public class ServiceHTTPMonitorResultRequest extends ServiceMonitorResultRequest
 
     public void setDebugInfo(ServiceHTTPMonitorResultRequestDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
+    }
+
+    public boolean isSearchStringSucess() {
+        return searchStringSucess;
+    }
+
+    public void setSearchStringSucess(boolean searchStringSucess) {
+        this.searchStringSucess = searchStringSucess;
+    }
+
+    public Long getResponseTime() {
+        return responseTime;
+    }
+
+    public void setResponseTime(Long responseTime) {
+        this.responseTime = responseTime;
     }
 }
