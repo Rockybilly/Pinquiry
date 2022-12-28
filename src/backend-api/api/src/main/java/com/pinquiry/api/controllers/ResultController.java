@@ -32,6 +32,9 @@ public class ResultController {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    AcknowledgementService acknowledgementService;
+
     @PostMapping("/add_results")
     public ResponseEntity<String> addResults(@RequestBody ServiceMonitorResultListRequest resultList, HttpServletRequest request){
 
@@ -88,6 +91,13 @@ public class ResultController {
                         hmr.setMonitor(m);
                         hmr.findIncident();
 
+                        if(hmr.isIncident()){
+                            acknowledgementService.checkIfNeededAcknowledgement(m, hmr.getTimestamp());
+                        }
+                        else{
+                            m.setUnacknowledgedIncidentCount(0);
+                        }
+
                         succ = resultService.addResult(hmr);
 
                     } else if (smrr.getType() == ServiceMonitorResultRequest.ResultType.content) {
@@ -139,6 +149,12 @@ public class ResultController {
                             e.printStackTrace();
                             succ = false;
                         }
+                        if(cmer.isIncident()){
+                            acknowledgementService.checkIfNeededAcknowledgement(m, scmerr.getTimestamp());
+                        }
+                        else{
+                            m.setUnacknowledgedIncidentCount(0);
+                        }
                     } else {
                         PingMonitorResult pmr = new PingMonitorResult();
                         pmr.setType(MonitorResult.ResultType.ping);
@@ -164,9 +180,16 @@ public class ResultController {
                         }
                         pmr.setErrorString(spmrr.getErrorString());
 
+                        if(pmr.isIncident()){
+                            acknowledgementService.checkIfNeededAcknowledgement(m, pmr.getTimestamp());
+                        }
+                        else{
+                            m.setUnacknowledgedIncidentCount(0);
+                        }
+
                         succ = resultService.addResult(pmr);
                     }
-
+                    monitorService.updateMonitor(m);
 
                     if (succ)
                         System.out.println(smrr.getMonId() + " saved ");

@@ -2,8 +2,6 @@ package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.ServiceWorkerCommunicatorEventEntry;
 import com.pinquiry.api.model.rest.request.service.RemoveMonitorRequest;
-import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,7 +41,6 @@ public class ServiceWorkerCommunicator extends Thread {
 
                 try {
                     String _url = "http://" + eventEntry.getSw().getIp() + ":" + String.valueOf(controller.port);
-                    System.out.println(controller.port);
                     if (eventEntry.getOperationType() == ServiceWorkerCommunicatorEventEntry.OperationType.ADD) {
                         _url = _url + "/add_monitor";
                         URI uri = new URI(_url);
@@ -56,13 +53,21 @@ public class ServiceWorkerCommunicator extends Thread {
                             result = restTemplate.postForEntity(uri, eventEntry.getMonitor(), String.class);
                         } catch (Exception e) {
                             System.out.println(e.getMessage());
+                            eventEntry.getSw().setActive(false);
                             System.out.println("Could not add monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
+                            String text = "could not add " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
+                            try {
+                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
+                            }catch (Exception e1){
+                                e1.printStackTrace();
+                                System.out.println("Could not sent e mail");
+                            }
                         }
                         if(result == null){
                             System.out.println("Result empty");
                             String text = "could not add " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
                             try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be  add", text);
+                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
                             }catch (Exception e){
                                 e.printStackTrace();
                                 System.out.println("Could not sent e mail");
@@ -88,11 +93,25 @@ public class ServiceWorkerCommunicator extends Thread {
                             e.printStackTrace();
                             System.out.println(e.getMessage());
                             System.out.println("Could not remove monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
+                            String text = "could not remove " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
+                            try {
+                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be removed", text);
+                            }catch (Exception e1){
+                                e1.printStackTrace();
+                                System.out.println("Could not sent e mail");
+                            }
                         }
                         System.out.println(result.getStatusCode());
                         System.out.println(result.getBody());
                         if(result == null){
                             System.out.println("Result empty");
+                            String text = "could not remove " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
+                            try {
+                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be removed", text);
+                            }catch (Exception e1){
+                                e1.printStackTrace();
+                                System.out.println("Could not sent e mail");
+                            }
                         }
 
 
@@ -107,11 +126,25 @@ public class ServiceWorkerCommunicator extends Thread {
                         } catch (Exception e) {
                             System.out.println(e.getMessage());
                             System.out.println("Could not update monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
+                            String text = "could not update " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
+                            try {
+                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be updated", text);
+                            }catch (Exception e1){
+                                e1.printStackTrace();
+                                System.out.println("Could not sent e mail");
+                            }
                         }
                     }
 
                     if (result != null) {
                         System.out.println(result.getStatusCode());
+                        String text = "could not update " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
+                        try {
+                            controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be updated", text);
+                        }catch (Exception e1){
+                            e1.printStackTrace();
+                            System.out.println("Could not sent e mail");
+                        }
                     }
 
                 } catch (URISyntaxException e) {

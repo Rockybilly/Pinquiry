@@ -212,6 +212,24 @@ public class MonitorController {
         r.setTotalMonitorSize(lm.size());
         return ResponseEntity.ok().body(r);
     }
+    @GetMapping("/get-monitor-details/{id}")
+    public ResponseEntity<?> getMonitorDetails(@CookieValue(name = "jwt") String token, @PathVariable("id") long mon_id){
+        String username = null;
+        try {
+            username = authService.getUsernameFromToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        User u = userService.findUserByUsername(username);
+
+        Monitor m = monitorService.findMonitorById(mon_id);
+        if(!Objects.equals(m.getMonUser().getUsername(), username)){
+            return ResponseEntity.status(404).body("Monitor could not be found");
+        }
+        else{
+            return ResponseEntity.ok(m);
+        }
+    }
 
     @PostMapping("/update-monitor")
     public ResponseEntity<String> updateMonitor(@CookieValue(name = "jwt") String token,@RequestBody Monitor monitor){

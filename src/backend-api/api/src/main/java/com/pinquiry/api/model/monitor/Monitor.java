@@ -38,6 +38,11 @@ public abstract class Monitor {
     private User monUser;
 
 
+    private int unacknowledgedIncidentCount;
+    @Column(name="acknowledgement_threshold", columnDefinition="integer default '5'")
+    private int acknowledgementThreshold;
+
+
     @Type( type = "enum_type")
     @Enumerated(EnumType.STRING)
     @JsonProperty("mon_type")
@@ -125,4 +130,19 @@ public abstract class Monitor {
     }
 
 
+    public int getUnacknowledgedIncidentCount() {
+        return unacknowledgedIncidentCount;
+    }
+
+    public void setUnacknowledgedIncidentCount(int unacknowledgedIncidentCount) {
+        this.unacknowledgedIncidentCount = unacknowledgedIncidentCount;
+    }
+
+    public int getAcknowledgementThreshold() {
+        return acknowledgementThreshold;
+    }
+
+    public void setAcknowledgementThreshold(int acknowledgementThreshold) {
+        this.acknowledgementThreshold = acknowledgementThreshold;
+    }
 }

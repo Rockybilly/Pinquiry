@@ -19,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+
 @Service
 public class ServiceWorkerService implements IServiceWorkerService{
 
@@ -34,9 +36,16 @@ public class ServiceWorkerService implements IServiceWorkerService{
     @Autowired
     ServiceWorkerCommunicatorController serviceWorkerCommunicatorController;
 
-
     @Value("${service.port}")
     int port;
+
+    private ServiceWorkerHealthCheck swhc;
+
+    public ServiceWorkerService() {
+        Timer t = new Timer();
+        this.swhc = new ServiceWorkerHealthCheck(this);
+        t.scheduleAtFixedRate(swhc,1000, 10000);
+    }
 
     @Override
     public void addMonitorToServiceWorkerByLocation(String loc, Monitor m, OperationType type ){
@@ -164,11 +173,23 @@ public class ServiceWorkerService implements IServiceWorkerService{
     }
 
 
+    public boolean updateServiceWorker(ServiceWorker sw){
+        try{
+            repository.save(sw);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
 
     @Override
     public List<ServiceWorker> findAll(){
         return repository.findAll();
     }
+
 
 
 
