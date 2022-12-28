@@ -75,6 +75,7 @@ BackendReceiver::BackendReceiver(std::string ip,
 }
 
 void BackendReceiver::receiver_worker(){
+    std::cout << "Monitor listening 6363 port" << std::endl;
     while (true){
         svr.listen("0.0.0.0", 6363);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
