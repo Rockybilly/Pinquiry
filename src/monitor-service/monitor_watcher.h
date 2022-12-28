@@ -69,6 +69,9 @@ class MonitorWatcher{
 
     uint16_t ping_next_id = 0;
     PingReceiver ping_receiver;
+
+    __pid_t pid = getpid();
+
     void add_result(MonitorResult* res);
 public:
     MonitorWatcher() : ping_receiver([this](MonitorResult* res){add_result(res);}){}

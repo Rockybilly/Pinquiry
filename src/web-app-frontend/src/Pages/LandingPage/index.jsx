@@ -53,13 +53,45 @@ function LandingPage() {
               )}
 
               <p style={{ color: "#C1FFD7" }}>
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-                in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-                nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum."{" "}
+                Monitor your website
+                <br />
+                <br />
+                Pinquiry is a web page monitoring service that notifies website
+                owners about incidents, allows them to monitor their sites in
+                real time, and provides detailed incident reports.
+                <br />
+                <br />
+                Features section:
+                <br />
+                <br />
+                Alerted when something is wrong
+                <br />
+                <br />
+                Pinquiry alerts you when your site or server has gone down. It
+                monitors the availability of the servers and the responses of
+                the website in near real time, and notifies you if there's an
+                incident.
+                <br />
+                <br />
+                Monitoring done right
+                <br />
+                <br />
+                Pinquiry is a web page monitoring service that helps ensure your
+                site is up, running, and responsive at all times. It monitors
+                the availability of the servers and the responses of the website
+                in near real time, and notifies you if there's an incident.
+                <br />
+                <br />
+                Accurate monitoring with Pinquiry
+                <br />
+                <br />
+                The website monitoring tool tracks every single data point
+                related to your site, like uptime percentage, response time,
+                bandwidth consumption etc. It also provides detailed reports on
+                incidents that have happened over a period of time (e.g., last 3
+                months).
+                <br />
+                <br />{" "}
               </p>
             </div>
           </Grid>

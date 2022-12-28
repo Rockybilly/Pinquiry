@@ -72,9 +72,15 @@ BackendReceiver::BackendReceiver(std::string ip,
             res.set_content(error_st, "text/plain");
         }
     });
+
+    svr.Get( "/i_am_online", [&](const httplib::Request& req, httplib::Response& res) {
+        res.status = 200;
+        res.set_content("", "text/plain");
+    });
 }
 
 void BackendReceiver::receiver_worker(){
+    std::cout << "Monitor listening 6363 port" << std::endl;
     while (true){
         svr.listen("0.0.0.0", 6363);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));

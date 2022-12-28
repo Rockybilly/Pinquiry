@@ -192,7 +192,13 @@ void MonitorWatcher::add_monitors_begin(const std::vector<MonitorObject>& mons){
                                         [this](uint16_t id, const PingReceiver::PingClientEntry& entry)
                                         {ping_receiver.add_new_entry(id, entry);}, ping_next_id,
                                         ping_receiver.get_socket());
-                ping_receiver.add_new_id(ping_next_id++);
+                ping_receiver.add_new_id(ping_next_id);
+
+                ping_next_id++;
+                if(ping_next_id == htons(pid)){
+                    ping_next_id++;
+                }
+
                 break;
             case MonitorObject::Type::HTTP:
                 wt_ptr = new HttpWorker(mon, [this](MonitorResult* res){add_result(res);});
@@ -230,7 +236,11 @@ ErrorString MonitorWatcher::add_monitor(const MonitorObject& mon, bool lock){
                 if(lock) watches_map_mutex.unlock();
                 return "Couldn't insert existing mon_id";
             }
-            ping_receiver.add_new_id(ping_next_id++);
+            ping_receiver.add_new_id(ping_next_id);
+            ping_next_id++;
+            if(ping_next_id == htons(pid)){
+                ping_next_id++;
+            }
             break;
         }
 

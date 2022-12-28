@@ -6,8 +6,8 @@
 #include "include/rapidjson/document.h"
 #include "json_handler.h"
 
-BackendClient::BackendClient(const std::string& ip, int port) : backend_cli(ip + ':' + std::to_string(port), 5000){
-
+BackendClient::BackendClient(const std::string& ip, int port) : backend_cli("http://" + ip + ':' + std::to_string(port), 5000){
+    std::cout << "Monitor, opening backend connection with: " << ip + ':' + std::to_string(port) << std::endl;
 }
 
 

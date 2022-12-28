@@ -145,7 +145,6 @@ void PingReceiver::timeout_worker(){
 
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
-
 }
 
 void PingReceiver::add_new_id(uint16_t id){

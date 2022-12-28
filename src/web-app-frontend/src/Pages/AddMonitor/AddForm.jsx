@@ -8,6 +8,7 @@ import {
   Select,
   Space,
   Spin,
+  Table,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import PingForm from "./PingForm";
@@ -15,8 +16,27 @@ import HttpForm from "./HttpForm";
 import ContentForm from "./ContentForm";
 import ReactCountryFlag from "react-country-flag";
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { addMonitor, getServices } from "../../Services/backendComm";
+import {
+  addMonitor,
+  getServices,
+  getServicesLocations,
+} from "../../Services/backendComm";
 const { Option } = Select;
+
+const countries = require("country-data").countries;
+const { Column } = Table;
+
+const countryCodeMap = {};
+
+countries.all.forEach((country) => {
+  if (
+    country.status &&
+    country.status !== "reserved" &&
+    country.status !== "deleted"
+  ) {
+    countryCodeMap[country.alpha2] = country.name;
+  }
+});
 
 export function AddForm() {
   const [form] = Form.useForm();
@@ -27,7 +47,7 @@ export function AddForm() {
   useEffect(() => {
     async function doWork() {
       setContentLoading(true);
-      setMonitorServices(await getServices());
+      setMonitorServices(await getServicesLocations());
       setContentLoading(false);
     }
     doWork();
@@ -70,16 +90,18 @@ export function AddForm() {
           ) : (
             <Select placeholder="Select location">
               {monitorServices.map((d, index) => (
-                <Option key={index} value={d.countryCode}>
+                <Option key={index} value={d}>
                   <ReactCountryFlag
                     style={{
                       width: "1.3vw",
                       height: "1.3vw",
                     }}
-                    countryCode={d.countryCode}
+                    countryCode={d}
                     svg
                   />
-                  <span style={{ marginLeft: "0.6vw" }}>{d.name}</span>
+                  <span style={{ marginLeft: "0.6vw" }}>
+                    {countryCodeMap[d]}
+                  </span>
                 </Option>
               ))}
             </Select>

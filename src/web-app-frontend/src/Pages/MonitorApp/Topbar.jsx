@@ -39,8 +39,6 @@ export function Topbar() {
           alt="Logo"
         />
         <Col flex={1} />
-        <span style={{ fontSize: "2em" }}>WebApp</span>
-        <Col flex={1} />
         <Menu.Item
           key="1"
           style={{ height: "100%", backgroundColor: "transparent" }}
