@@ -94,10 +94,6 @@ export function Monitors() {
     form.setFieldValue(["page_no"], undefined);
   }
 
-  function monDelete(id) {
-    removeMonitor(id);
-  }
-
   return (
     <Spin spinning={contentLoading}>
       <Form
@@ -243,15 +239,6 @@ export function Monitors() {
                 onClick={() => navigate("/monitor-detail/" + record.id)}
               >
                 See Details
-              </Button>
-
-              <Button
-                style={{
-                  fontWeight: "bold",
-                }}
-                onClick={() => monDelete(record.id)}
-              >
-                remuuve
               </Button>
             </>
           )}
