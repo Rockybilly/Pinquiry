@@ -1,7 +1,6 @@
 package com.pinquiry.api.service;
 
 import com.pinquiry.api.model.ServiceWorker;
-import com.pinquiry.api.repository.ServiceWorkerRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
