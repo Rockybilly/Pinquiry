@@ -19,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+
 @Service
 public class ServiceWorkerService implements IServiceWorkerService{
 
@@ -34,14 +36,21 @@ public class ServiceWorkerService implements IServiceWorkerService{
     @Autowired
     ServiceWorkerCommunicatorController serviceWorkerCommunicatorController;
 
-
     @Value("${service.port}")
     int port;
+
+    private ServiceWorkerHealthCheck swhc;
+
+    public ServiceWorkerService() {
+        Timer t = new Timer();
+        this.swhc = new ServiceWorkerHealthCheck(this);
+        t.scheduleAtFixedRate(swhc,1000, 10000);
+    }
 
     @Override
     public void addMonitorToServiceWorkerByLocation(String loc, Monitor m, OperationType type ){
         List<ServiceWorker> lsw = repository.findAllByLocation(loc);
-        System.out.println("Found " + String.valueOf(lsw.size()) + " monitors with location " + loc );
+        System.out.println("Found " + String.valueOf(lsw.size()) + " workers with location " + loc );
         ServiceMonitorResponse smr = null;
         if(m.getType() == Monitor.MonitorType.http){
             HTTPMonitor hm = (HTTPMonitor) m;
@@ -107,6 +116,9 @@ public class ServiceWorkerService implements IServiceWorkerService{
                 sw.getMonIds().remove(m.getId());
                 repository.save(sw);
             }
+            else if(type == OperationType.UPDATE){
+                repository.save(sw);
+            }
         }
 
     }
@@ -122,7 +134,8 @@ public class ServiceWorkerService implements IServiceWorkerService{
         else if (type == OperationType.DELETE){
             event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.DELETE);
         }
-        else{
+       else if (type == OperationType.UPDATE){
+           System.out.println("update aq");
             event.setOperationType(ServiceWorkerCommunicatorEventEntry.OperationType.UPDATE);
         }
         serviceWorkerCommunicatorController.addEvent(event);
@@ -164,11 +177,23 @@ public class ServiceWorkerService implements IServiceWorkerService{
     }
 
 
+    public boolean updateServiceWorker(ServiceWorker sw){
+        try{
+            repository.save(sw);
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
 
     @Override
     public List<ServiceWorker> findAll(){
         return repository.findAll();
     }
+
 
 
 

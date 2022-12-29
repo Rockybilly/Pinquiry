@@ -109,6 +109,7 @@ public class ResultService implements IResultService {
 
                     }
                     if (mr.getType() == MonitorResult.ResultType.ping) {
+                        assert mr instanceof PingMonitorResult;
                         PingMonitorResult pingmr = (PingMonitorResult) mr;
                         total += pingmr.getResponseTime();
 

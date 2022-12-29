@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.results.MonitorResult;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -36,6 +38,10 @@ public abstract class Monitor {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User monUser;
+
+
+    private int unacknowledgedIncidentCount;
+    private int acknowledgementThreshold = 5;
 
 
     @Type( type = "enum_type")
@@ -125,4 +131,19 @@ public abstract class Monitor {
     }
 
 
+    public int getUnacknowledgedIncidentCount() {
+        return unacknowledgedIncidentCount;
+    }
+
+    public void setUnacknowledgedIncidentCount(int unacknowledgedIncidentCount) {
+        this.unacknowledgedIncidentCount = unacknowledgedIncidentCount;
+    }
+
+    public int getAcknowledgementThreshold() {
+        return acknowledgementThreshold;
+    }
+
+    public void setAcknowledgementThreshold(int acknowledgementThreshold) {
+        this.acknowledgementThreshold = acknowledgementThreshold;
+    }
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class MonitorService implements IMonitorService {
 
@@ -26,6 +27,11 @@ public class MonitorService implements IMonitorService {
 
     @Autowired
     private ResultService resultService;
+
+    @Autowired
+    private  EmailService emailService;
+
+    private int retryCount = 0 ;
 
     @Override
     public boolean createMonitor(User user, Monitor monitor){
@@ -78,7 +84,7 @@ public class MonitorService implements IMonitorService {
             monitorRepository.save(cm);
         }
 
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), monitor, ServiceWorkerService.OperationType.UPDATE);
+            //serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), monitor, ServiceWorkerService.OperationType.UPDATE);
 
         return true;
     }
@@ -108,8 +114,30 @@ public class MonitorService implements IMonitorService {
         }
 
             serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
+        try {
+            monitorRepository.delete(m);
+        }
+        catch (Exception e){
+            try {
+                m = monitorRepository.findById(id).orElseThrow();
+            }catch(Exception e1){
+                return true;
+            }
+            retryCount++;
+            if(retryCount > 5){
+                System.out.println("Could not remove monitor " + id + " from database");
+                String text = "Could not remove monitor check database";
+                try {
+                    emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
+                }catch (Exception e1){
+                    e1.printStackTrace();
+                    System.out.println("Could not sent e mail");
+                }
+                return false;
+            }
+            removeMonitor(m.getId());
 
-        monitorRepository.delete(m);
+        }
         return true;
     }
 
@@ -124,8 +152,9 @@ public class MonitorService implements IMonitorService {
 
     @Override
     public boolean getMonitorOnlineStatus(long id){
-        List<MonitorResult> lmr = resultService.findLastXResults(id, 3);
         Monitor m = findMonitorById(id);
+        List<MonitorResult> lmr = resultService.findLastXResults(id, 5);
+
         boolean online = false;
         for( MonitorResult mr: lmr) {
             if (m.getType() == Monitor.MonitorType.http) {
@@ -137,7 +166,7 @@ public class MonitorService implements IMonitorService {
             }
             if (m.getType() == Monitor.MonitorType.ping) {
                 PingMonitorResult pmr = (PingMonitorResult) mr;
-                if(pmr.getResponseTime() != 0){
+                if(pmr.getErrorString() != null){
                     online = true;
                 }
                 break;
@@ -199,8 +228,4 @@ public class MonitorService implements IMonitorService {
         }
         return r;
     }
-
-
-
-
 }
