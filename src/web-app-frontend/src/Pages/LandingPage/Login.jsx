@@ -8,14 +8,46 @@ import { useNavigate } from "react-router-dom";
 
 import { loginUser } from "../../Services/login";
 import { useStoreActions } from "easy-peasy";
-
+import { alpha, styled } from '@mui/material/styles';
 const md5 = require("md5");
+
+
+const CssTextField = styled(TextField)({
+  '& label.Mui-focused': {
+    color: '#001529',
+  },
+  '& .MuiInput-underline:after': {
+    borderBottomColor: '#001529',
+  },
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: 'red',
+    },
+    '&:hover fieldset': {
+      borderColor: 'yellow',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: 'green',
+    },
+  },
+});
+
+
+const CssButton = styled(Button)({
+    '&:hover': {
+      color: '#04284a',
+  }
+});
+
+
+
 
 function Login({ onClickSignup }) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const doLogin = useStoreActions((actions) => actions.doLogin);
   const setLoginLoading = useStoreActions((actions) => actions.setLoginLoading);
+
 
   const handleNameChange = (event) => {
     event.preventDefault();
@@ -39,8 +71,8 @@ function Login({ onClickSignup }) {
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div>
-          <TextField
+        <div style={{margin:"10px"}}>
+          <CssTextField
             value={userName}
             name="loginEmailOrUsername"
             onChange={handleNameChange}
@@ -49,9 +81,8 @@ function Login({ onClickSignup }) {
             variant="standard"
           />
         </div>
-
-        <div>
-          <TextField
+        <div style={{margin:"10px"}}>
+          <CssTextField
             value={password}
             name="loginPassword"
             onChange={handlePasswordChange}
@@ -61,17 +92,17 @@ function Login({ onClickSignup }) {
             type="password"
           />
         </div>
-        <div style={{ textAlign: "right", paddingRight: "27%" }}>
-          <button type="submit" style={{ margin: "7px" }} variant="outlined">
+        <div style={{ margin:"10px"}}>
+          <CssButton type="submit" style={{ color:"#04284a", width:"100%"}}>
             Log In
-          </button>
+          </CssButton>
         </div>
       </form>
 
       <div style={{ margin: "10px" }}>
         <p>
           You don't have an account?{" "}
-          <Button onClick={handleGoSignup}>Sign up</Button>{" "}
+          <Button onClick={handleGoSignup} style={{color:"black"}} >Sign up</Button>{" "}
         </p>
       </div>
     </div>
