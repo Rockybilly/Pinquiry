@@ -9,6 +9,7 @@ import com.pinquiry.api.model.rest.TimestampResponseTime;
 import com.pinquiry.api.model.results.*;
 import com.pinquiry.api.repository.MonitorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -227,5 +228,10 @@ public class MonitorService implements IMonitorService {
             }
         }
         return r;
+    }
+
+    public Page<MonitorResult> getIncidentsByIdInTimespan(Long id, long begin, long end){
+        Pageable p = PageRequest.of(0, 100);
+        return resultService.findIncidentsInTimeSpan(id,begin, end, p, true );
     }
 }

@@ -43,7 +43,7 @@ public class HTTPMonitor extends Monitor{
 
 
     @JsonProperty("success_codes")
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name="success_codes", joinColumns=@JoinColumn(name="id"))
     @Column(name = "success_code")
     private List<Integer> successCodes;

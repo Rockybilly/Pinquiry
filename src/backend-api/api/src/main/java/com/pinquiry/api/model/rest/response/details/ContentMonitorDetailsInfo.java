@@ -23,8 +23,7 @@ public class ContentMonitorDetailsInfo {
 
     private String uri;
     private int port;
-    @JsonProperty("request_headers")
-    private Map<String,String> RequestHeaders;
+    private Map<String,String> requestHeaders;
 
 
     public ContentMonitorInfo.ContentProtocolType getProtocol() {
@@ -60,10 +59,10 @@ public class ContentMonitorDetailsInfo {
     }
 
     public Map<String, String> getRequestHeaders() {
-        return RequestHeaders;
+        return requestHeaders;
     }
 
     public void setRequestHeaders(Map<String, String> requestHeaders) {
-        RequestHeaders = requestHeaders;
+        this.requestHeaders = requestHeaders;
     }
 }

@@ -250,9 +250,6 @@ public class MonitorController {
                 hmd.setUri(hm.getUri());
                 hmd.setServer(hm.getServer());
                 hmd.setRequestHeaders(hm.getRequestHeaders());
-                for(String s: hm.getRequestHeaders().keySet()){
-                    System.out.println(s + " - " + hm.getRequestHeaders().get(s) );
-                }
 
                 md = hmd;
             }
@@ -273,6 +270,15 @@ public class MonitorController {
                     cmdi.setServer(cmi.getServer());
                     cmdi.setUri(cmi.getUri());
                     cmdi.setRequestHeaders(cmi.getRequestHeaders());
+                    System.out.println("Monitor request Headers");
+                    for(String key: cmi.getRequestHeaders().keySet()){
+                        System.out.println(key + " - " + cmi.getRequestHeaders().get(key));
+                    }
+                    System.out.println("Detail request headers");
+                    for(String key: cmdi.getRequestHeaders().keySet()){
+                        System.out.println(key + " - " + cmdi.getRequestHeaders().get(key));
+                    }
+
                     lcmi.add(cmdi);
                 }
                 cmd.setContentLocations(lcmi);

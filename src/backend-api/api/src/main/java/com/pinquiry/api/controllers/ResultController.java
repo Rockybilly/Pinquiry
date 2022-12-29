@@ -288,6 +288,35 @@ public class ResultController {
 
     }
 
+    @GetMapping("/get-incident-list/{mon_id}")
+    public ResponseEntity<?> getIncidentList(@CookieValue(name = "jwt") String token,
+                                                            @PathVariable("mon_id") long mon_id,
+                                                            @RequestParam("begin") long begin,
+                                                            @RequestParam("end") long end){
+        String username = null;
+        try {
+            username = authService.getUsernameFromToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        User u = userService.findUserByUsername(username);
+
+        List<Monitor> lm;
+
+        try {
+            lm = monitorService.findMonitorByUserId(u);
+        }catch (Exception e){
+            return ResponseEntity.status(404).body("Monitor not found");
+        }
+
+        Monitor m = monitorService.findMonitorById(mon_id);
+        if(!Objects.equals(m.getMonUser().getUserId(), u.getUserId())){
+            return ResponseEntity.status(404).body("Monitor not found");
+        }
+
+        return ResponseEntity.ok().body(monitorService.getIncidentsByIdInTimespan(mon_id, begin, end).getContent());
+    }
+
 
 
 }
