@@ -10,6 +10,7 @@ import com.pinquiry.api.model.rest.request.webapp.addmonitor.*;
 import com.pinquiry.api.model.rest.response.DashboardStatistics;
 import com.pinquiry.api.model.rest.response.UserMonitorListResponse;
 import com.pinquiry.api.model.rest.response.UserMonitorListResponseMonitor;
+import com.pinquiry.api.model.rest.response.details.*;
 import com.pinquiry.api.model.rest.response.service.ServiceContentMonitorResponse;
 import com.pinquiry.api.model.rest.response.service.ServiceHTTPMonitorResponse;
 import com.pinquiry.api.model.rest.response.service.ServiceMonitorResponse;
@@ -214,6 +215,7 @@ public class MonitorController {
     }
     @GetMapping("/get-monitor-details/{id}")
     public ResponseEntity<?> getMonitorDetails(@CookieValue(name = "jwt") String token, @PathVariable("id") long mon_id){
+
         String username = null;
         try {
             username = authService.getUsernameFromToken(token);
@@ -223,11 +225,72 @@ public class MonitorController {
         User u = userService.findUserByUsername(username);
 
         Monitor m = monitorService.findMonitorById(mon_id);
-        if(!Objects.equals(m.getMonUser().getUsername(), username)){
+        if(m == null){
+            return ResponseEntity.status(404).body("Monitor could not be found");
+        }
+        else if(!Objects.equals(m.getMonUser().getUsername(), username)){
             return ResponseEntity.status(404).body("Monitor could not be found");
         }
         else{
-            return ResponseEntity.ok(m);
+            MonitorDetails md = null;
+            if(m.getType() == Monitor.MonitorType.http){
+                HTTPMonitor hm = (HTTPMonitor) m;
+                HTTPMonitorDetails hmd = new HTTPMonitorDetails();
+                hmd.setName(hm.getName());
+                hmd.setTimeoutInSeconds(hm.getTimeoutInSeconds());
+                hmd.setAcknowledgementThreshold(hm.getAcknowledgementThreshold());
+                hmd.setIntervalInSeconds(hm.getIntervalInSeconds());
+                hmd.setLocation(hm.getLocation());
+
+                hmd.setPort(hm.getPort());
+                hmd.setProtocol(hm.getProtocol());
+                hmd.setSearchString(hm.getSearchString());
+                hmd.setResponseHeaders(hm.getResponseHeaders());
+                hmd.setSuccessCodes(hm.getSuccessCodes());
+                hmd.setUri(hm.getUri());
+                hmd.setServer(hm.getServer());
+                hmd.setRequestHeaders(hm.getRequestHeaders());
+                for(String s: hm.getRequestHeaders().keySet()){
+                    System.out.println(s + " - " + hm.getRequestHeaders().get(s) );
+                }
+
+                md = hmd;
+            }
+            else if(m.getType() == Monitor.MonitorType.content){
+                ContentMonitor cm = (ContentMonitor) m;
+                ContentMonitorDetails cmd = new ContentMonitorDetails();
+                cmd.setName(cm.getName());
+                cmd.setTimeoutInSeconds(cm.getTimeoutInSeconds());
+                cmd.setAcknowledgementThreshold(cm.getAcknowledgementThreshold());
+                cmd.setIntervalInSeconds(cm.getIntervalInSeconds());
+                cmd.setLocation(cm.getLocation());
+
+                List<ContentMonitorDetailsInfo> lcmi = new ArrayList<>();
+                for(ContentMonitorInfo cmi: cm.getContentLocations()){
+                    ContentMonitorDetailsInfo cmdi = new ContentMonitorDetailsInfo();
+                    cmdi.setPort(cmi.getPort());
+                    cmdi.setProtocol(cmi.getProtocol());
+                    cmdi.setServer(cmi.getServer());
+                    cmdi.setUri(cmi.getUri());
+                    cmdi.setRequestHeaders(cmi.getRequestHeaders());
+                    lcmi.add(cmdi);
+                }
+                cmd.setContentLocations(lcmi);
+                md = cmd;
+            }
+            else if(m.getType() == Monitor.MonitorType.ping){
+                PingMonitor pm = (PingMonitor) m;
+                PingMonitorDetails pmd = new PingMonitorDetails();
+                pmd.setName(pm.getName());
+                pmd.setTimeoutInSeconds(pm.getTimeoutInSeconds());
+                pmd.setAcknowledgementThreshold(pm.getAcknowledgementThreshold());
+                pmd.setIntervalInSeconds(pm.getIntervalInSeconds());
+                pmd.setLocation(pm.getLocation());
+
+                pmd.setServer(pm.getServer());
+                md = pmd;
+            }
+            return ResponseEntity.ok(md);
         }
     }
 

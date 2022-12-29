@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MonitorService implements IMonitorService {
@@ -154,7 +153,7 @@ public class MonitorService implements IMonitorService {
     @Override
     public boolean getMonitorOnlineStatus(long id){
         Monitor m = findMonitorById(id);
-        List<MonitorResult> lmr = resultService.findLastXResults(id, 10 * m.getIntervalInSeconds());
+        List<MonitorResult> lmr = resultService.findLastXResults(id, 5);
 
         boolean online = false;
         for( MonitorResult mr: lmr) {
@@ -228,14 +227,5 @@ public class MonitorService implements IMonitorService {
             }
         }
         return r;
-    }
-
-
-    public int getRetryCount() {
-        return retryCount;
-    }
-
-    public void setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
     }
 }

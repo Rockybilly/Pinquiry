@@ -146,7 +146,7 @@ public class UserController {
         }
 
         return ResponseEntity.status(200)
-                .header(HttpHeaders.SET_COOKIE, tokenCookie.toString()).body(buar);
+                .header(HttpHeaders.SET_COOKIE, tokenCookie.toString() + " httpOnly; SameSite=None;").body(buar);
 
     }
 
