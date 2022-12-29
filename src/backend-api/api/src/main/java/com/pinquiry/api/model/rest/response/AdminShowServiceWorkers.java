@@ -7,6 +7,8 @@ public class AdminShowServiceWorkers {
     private String countryCode;
     private int monitorCount;
 
+    private boolean isOnline;
+
     public AdminShowServiceWorkers() {
     }
 
@@ -48,5 +50,13 @@ public class AdminShowServiceWorkers {
 
     public void setMonitorCount(int monitorCount) {
         this.monitorCount = monitorCount;
+    }
+
+    public boolean getIsOnline() {
+        return isOnline;
+    }
+
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
     }
 }

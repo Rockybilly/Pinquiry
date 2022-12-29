@@ -198,6 +198,7 @@ public class ServiceWorkerController {
             assw.setCountryCode(sw.getLocation());
             assw.setPort(sw.getPort());
             assw.setMonitorCount(sw.getMonIds().size());
+            assw.setIsOnline(sw.isActive());
             lassw.add(assw);
         }
         return ResponseEntity.ok().body(lassw);

@@ -24,7 +24,7 @@ public class ServiceWorker {
 
     private Timestamp lastActive;
 
-    private boolean active;
+    private boolean active = false;
 
     @JsonProperty("countryCode")
     private String location;
