@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.results.MonitorResult;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -39,8 +41,7 @@ public abstract class Monitor {
 
 
     private int unacknowledgedIncidentCount;
-    @Column(name="acknowledgement_threshold", columnDefinition="integer default 5")
-    private int acknowledgementThreshold;
+    private int acknowledgementThreshold = 5;
 
 
     @Type( type = "enum_type")

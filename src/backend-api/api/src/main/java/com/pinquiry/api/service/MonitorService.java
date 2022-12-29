@@ -29,6 +29,11 @@ public class MonitorService implements IMonitorService {
     @Autowired
     private ResultService resultService;
 
+    @Autowired
+    private  EmailService emailService;
+
+    private int retryCount = 0 ;
+
     @Override
     public boolean createMonitor(User user, Monitor monitor){
         monitor.setMonUser( user );
@@ -110,8 +115,30 @@ public class MonitorService implements IMonitorService {
         }
 
             serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
+        try {
+            monitorRepository.delete(m);
+        }
+        catch (Exception e){
+            try {
+                m = monitorRepository.findById(id).orElseThrow();
+            }catch(Exception e1){
+                return true;
+            }
+            retryCount++;
+            if(retryCount > 5){
+                System.out.println("Could not remove monitor " + id + " from database");
+                String text = "Could not remove monitor check database";
+                try {
+                    emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
+                }catch (Exception e1){
+                    e1.printStackTrace();
+                    System.out.println("Could not sent e mail");
+                }
+                return false;
+            }
+            removeMonitor(m.getId());
 
-        monitorRepository.delete(m);
+        }
         return true;
     }
 
@@ -204,6 +231,11 @@ public class MonitorService implements IMonitorService {
     }
 
 
+    public int getRetryCount() {
+        return retryCount;
+    }
 
-
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
 }
