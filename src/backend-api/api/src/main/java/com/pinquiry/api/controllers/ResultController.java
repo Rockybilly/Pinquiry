@@ -85,8 +85,6 @@ public class ResultController {
                             hmr.setDebugInfo(hmdInfo);
                             hmdInfo.setResult(hmr);
 
-                        } else {
-                            hmdInfo = null;
                         }
                         hmr.setMonitor(m);
                         hmr.findIncident();
@@ -214,7 +212,7 @@ public class ResultController {
                                                            ){
 
 
-        String username = null;
+        String username;
         try {
             username = authService.getUsernameFromToken(token);
         } catch (Exception e) {
@@ -255,7 +253,7 @@ public class ResultController {
     ){
 
 
-        String username = null;
+        String username;
         try {
             username = authService.getUsernameFromToken(token);
         } catch (Exception e) {
@@ -288,12 +286,20 @@ public class ResultController {
 
     }
 
+
     @GetMapping("/get-incident-list/{mon_id}")
     public ResponseEntity<?> getIncidentList(@CookieValue(name = "jwt") String token,
                                                             @PathVariable("mon_id") long mon_id,
                                                             @RequestParam("begin") long begin,
                                                             @RequestParam("end") long end){
-        String username = null;
+
+        if(begin == 0 || end == 0){
+            return ResponseEntity.status(400).body("Missing begin or end");
+        }
+        if(mon_id == 0){
+            return ResponseEntity.status(404).body("Monitor not found");
+        }
+        String username;
         try {
             username = authService.getUsernameFromToken(token);
         } catch (Exception e) {
@@ -306,6 +312,10 @@ public class ResultController {
         try {
             lm = monitorService.findMonitorByUserId(u);
         }catch (Exception e){
+            return ResponseEntity.status(404).body("Monitor not found");
+        }
+
+        if(lm == null || lm.size() == 0){
             return ResponseEntity.status(404).body("Monitor not found");
         }
 

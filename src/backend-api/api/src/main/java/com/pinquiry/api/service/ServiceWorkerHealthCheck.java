@@ -24,9 +24,12 @@ public class ServiceWorkerHealthCheck extends TimerTask {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> result = null;
         lsw = this.serviceWorkerService.repository.findAll();
+        if(lsw.size() == 0){
+            return;
+        }
         for(ServiceWorker sw: lsw){
             String _url = "http://" + sw.getIp() + ":" + serviceWorkerService.port + "/i_am_online";
-            URI uri = null;
+            URI uri;
             try {
                 uri = new URI(_url);
             } catch (URISyntaxException e) {
