@@ -3,7 +3,6 @@ project(MonitorServiceUnitTest)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_subdirectory(lib)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 include_directories(../../src/monitor-service)
 set(SOURCE_FILES ../../src/monitor-service/http_client.cpp)
