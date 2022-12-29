@@ -79,6 +79,7 @@ function Login({ onClickSignup }) {
             id="standard-basic"
             label="Username"
             variant="standard"
+            style={{ color: "#4E9F3D", width:"100%" }}
           />
         </div>
         <div style={{margin:"10px"}}>
@@ -90,10 +91,11 @@ function Login({ onClickSignup }) {
             label="Password"
             variant="standard"
             type="password"
+            style={{ color: "#4E9F3D", width:"100%" }}
           />
         </div>
         <div style={{ margin:"10px"}}>
-          <CssButton type="submit" style={{ color:"#04284a", width:"100%"}}>
+          <CssButton type="submit" style={{ color:"#001529", width:"100%"}}>
             Log In
           </CssButton>
         </div>
