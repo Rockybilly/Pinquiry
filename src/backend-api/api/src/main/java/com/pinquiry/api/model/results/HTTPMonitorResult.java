@@ -17,7 +17,6 @@ public class HTTPMonitorResult extends MonitorResult {
     private boolean responseHeaderSuccess;
     private boolean searchStringSuccess;
     @OneToOne(cascade= CascadeType.ALL)
-    @JsonIgnore
     private HTTPMonitorDebugInfo debugInfo;
 
 

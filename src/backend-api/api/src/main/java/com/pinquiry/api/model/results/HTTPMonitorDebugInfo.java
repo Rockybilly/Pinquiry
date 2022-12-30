@@ -1,5 +1,6 @@
 package com.pinquiry.api.model.results;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Type;
 
@@ -20,6 +21,7 @@ public class HTTPMonitorDebugInfo {
     private Map<String,String> responseHeaders;
 
     @OneToOne(mappedBy = "debugInfo", cascade= CascadeType.ALL)
+    @JsonIgnore
     HTTPMonitorResult result;
 
     public HTTPMonitorDebugInfo() {
