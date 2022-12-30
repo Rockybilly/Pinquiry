@@ -1,5 +1,7 @@
 package com.pinquiry.api.model.results;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
@@ -15,6 +17,7 @@ public class HTTPMonitorResult extends MonitorResult {
     private boolean responseHeaderSuccess;
     private boolean searchStringSuccess;
     @OneToOne(cascade= CascadeType.ALL)
+    @JsonIgnore
     private HTTPMonitorDebugInfo debugInfo;
 
 
