@@ -26,6 +26,17 @@ public:
         uint16_t sequence;
         uint8_t timeout_s;
     };
+
+    struct ICMPPkt{
+        icmphdr icmp_header;
+        char data[8];
+    };
+
+    struct IPPkt {
+        iphdr ip_header;
+        ICMPPkt icmp_pkt;
+    };
+
 private:
     using EntryList = std::pair<std::mutex, std::list<PingClientEntry>>;
     std::unordered_map<uint16_t, EntryList> id_list_map;
@@ -37,17 +48,14 @@ private:
     std::atomic<bool> stop_flag = false;
     std::function<void(MonitorResult*)> report_result;
 
-    std::queue<std::pair<uint64_t, icmphdr>> process_queue;
+    std::queue<std::pair<uint64_t, ICMPPkt>> process_queue;
     std::mutex queue_mutex;
     std::counting_semaphore<256> process_sem{0};
     void receiver_worker();
     void processor_worker();
     void timeout_worker();
 public:
-    struct IPPkt {
-        iphdr ip_header;
-        icmphdr icmp_header;
-    };
+
 
     explicit PingReceiver(std::function<void(MonitorResult*)>&& report_result_handler);
     bool open_socket();

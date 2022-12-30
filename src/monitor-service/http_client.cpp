@@ -18,6 +18,7 @@ HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(
         client->set_read_timeout(0, timeout_ms * 1000);
         client->set_keep_alive(true);
     }
+
 }
 
 HttpClient::Response HttpClient::get(const std::string &uri,

@@ -48,6 +48,20 @@ ErrorString json_parse_into_mon_ping(const JsonObject& json_obj, MonitorObject& 
 
 ErrorString json_parse_into_mon_http(const JsonObject& json_obj, MonitorObject& mon_obj){
 
+    if(json_obj.HasMember("timeout_s") && json_obj["timeout_s"].IsInt()){
+        mon_obj.moncon.timeout_s = json_obj["timeout_s"].GetInt();
+    }
+    else{
+        return "Error, expected timeout_s item.";
+    }
+
+    if(json_obj.HasMember("interval_s") && json_obj["interval_s"].IsInt()){
+        mon_obj.moncon.interval_s = json_obj["interval_s"].GetInt();
+    }
+    else{
+        return "Error, expected interval_s item.";
+    }
+
     if(json_obj.HasMember("protocol") && json_obj["protocol"].IsString()){
         mon_obj.moncon.protocol = json_obj["protocol"].GetString();
     }
@@ -109,20 +123,23 @@ ErrorString json_parse_into_mon_http(const JsonObject& json_obj, MonitorObject& 
 }
 
 ErrorString json_parse_into_mon_content(const JsonObject& json_obj, MonitorObject& mon_obj){
+    uint8_t timeout_s = 0;
+    uint8_t interval_s = 0;
 
     if(json_obj.HasMember("timeout_s") && json_obj["timeout_s"].IsInt()){
-        mon_obj.moncon.timeout_s = json_obj["timeout_s"].GetInt();
+        timeout_s = json_obj["timeout_s"].GetInt();
     }
     else{
         return "Error, expected timeout_s item.";
     }
 
     if(json_obj.HasMember("interval_s") && json_obj["interval_s"].IsInt()){
-        mon_obj.moncon.interval_s = json_obj["interval_s"].GetInt();
+        interval_s = json_obj["interval_s"].GetInt();
     }
     else{
         return "Error, expected interval_s item.";
     }
+
 
     if(json_obj.HasMember("content_locations") && json_obj["content_locations"].IsArray()){
         for(auto const& cl : json_obj["content_locations"].GetArray()){
@@ -163,6 +180,9 @@ ErrorString json_parse_into_mon_content(const JsonObject& json_obj, MonitorObjec
                     moncon.request_headers.insert({it->name.GetString(), it->value.GetString()});
                 }
             }
+
+            moncon.timeout_s = timeout_s;
+            moncon.interval_s = interval_s;
 
             mon_obj.moncons.push_back(moncon);
         }
@@ -334,6 +354,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
     res_obj.AddMember("mon_type", rc->get_type_str(), allocator);
     res_obj.AddMember("num_of_groups", rc->num_of_groups, allocator);
     res_obj.AddMember("timestamp_ms", rc->timestamp_ms,allocator);
+    res_obj.AddMember("status_code_success", rc->status_code_success, allocator);
 
     rapidjson::Value groups_arr(rapidjson::kArrayType);
 
@@ -351,7 +372,7 @@ JsonObject json_create_content_result(const MonitorResult* result, rapidjson::Do
             single_obj.AddMember("status_code", g.status_code, allocator);
             single_obj.AddMember("body_size", g.body_size, allocator);
 
-            if(rc->num_of_groups > 1){
+            if(rc->num_of_groups > 1 || !rc->status_code_success){
                 rapidjson::Value debug_obj;
                 debug_obj.SetObject();
 

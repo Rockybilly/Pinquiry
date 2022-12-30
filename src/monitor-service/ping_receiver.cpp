@@ -47,7 +47,7 @@ void PingReceiver::receiver_worker(){
             //std::cout << "Received id: " << recv_pkt.icmp_header.un.echo.id << " seq: " << htons(recv_pkt.icmp_header.un.echo.sequence) << std::endl;
 
             queue_mutex.lock();
-            process_queue.emplace(recvtime, recv_pkt.icmp_header);
+            process_queue.emplace(recvtime, recv_pkt.icmp_pkt);
             queue_mutex.unlock();
 
             process_sem.release();
@@ -62,12 +62,12 @@ void PingReceiver::processor_worker(){
         if(stop_flag) break;
 
         queue_mutex.lock();
-        auto [recvtime, header]  = process_queue.front();
+        auto [recvtime, pkt]  = process_queue.front();
         process_queue.pop();
         queue_mutex.unlock();
 
-        uint16_t id = htons(header.un.echo.id);
-        uint16_t seq = htons(header.un.echo.sequence);
+        uint16_t id = ntohs(pkt.icmp_header.un.echo.id);
+        uint16_t seq = ntohs(pkt.icmp_header.un.echo.sequence);
 
        // std::cout << "Processing id: " << id << " seq: " << seq << std::endl;
 
@@ -75,6 +75,12 @@ void PingReceiver::processor_worker(){
 
         if(!id_list_map.contains(id)){
             std::cout << "id not present in id_list_map: " << id << std::endl;
+            list_map_mutex.unlock_shared();
+            continue;
+        }
+
+        if( memcmp(pkt.data, "pinquiry", 8) != 0 ){
+            std::cout << "ICMP data not from Pinquiry, dropping packet." << id << std::endl;
             list_map_mutex.unlock_shared();
             continue;
         }
@@ -130,6 +136,11 @@ void PingReceiver::timeout_worker(){
                     result->mon_id = it->mon_id;
                     result->mon_type = MonitorObject::Type::PING;
                     result->error_str = "Ping timed out (" + std::to_string(it->timeout_s) + "s).";
+
+
+
+
+
                     report_result(result);
 
                     it = el.second.erase(it);

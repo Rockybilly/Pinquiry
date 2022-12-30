@@ -14,6 +14,7 @@ BackendReceiver::BackendReceiver(std::string ip,
                                  update_monitor_handler(update_mon_handler){
 
     svr.Post( "/add_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        std::cout << "API: /add_monitor called" << std::endl;
         auto [mon, error_st] = json_parse_monitor(req.body);
 
         if (error_st.empty()){
@@ -34,6 +35,7 @@ BackendReceiver::BackendReceiver(std::string ip,
     });
 
     svr.Post( "/remove_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        std::cout << "API: /remove_monitor called" << std::endl;
         auto [mon_id, error_st] = json_parse_monitor_id(req.body);
 
         if (error_st.empty()){
@@ -54,6 +56,7 @@ BackendReceiver::BackendReceiver(std::string ip,
     });
 
     svr.Post( "/update_monitor", [&](const httplib::Request& req, httplib::Response& res) {
+        std::cout << "API: /update_monitor called" << std::endl;
         auto [mon, error_st] = json_parse_monitor(req.body);
 
         if (error_st.empty()){

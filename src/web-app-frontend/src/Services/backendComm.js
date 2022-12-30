@@ -118,6 +118,70 @@ export async function getUserMonitors({ page_size, page_no }) {
   return result;
 }
 
+export async function getMonitorDetails({ id }) {
+  let result = {};
+  await axiosInstance
+    .get("/get-monitor-details/" + id)
+    .then(function (response) {
+      if (response.data) {
+        result = response.data;
+      } else {
+        result = [];
+      }
+    })
+    .catch(function (error) {
+      if (
+        (error?.response?.data && typeof error.response.data === "string") ||
+        error.response.data instanceof String
+      ) {
+        message.error(error.response.data);
+        throw error.response.data;
+      } else {
+        message.error(
+          "Error fetching monitor details. Please consult a system administrator."
+        );
+        throw "Error fetching monitor details. Please consult a system administrator.";
+      }
+    })
+    .then(function () {
+      // always executed
+    });
+
+  return result;
+}
+
+export async function getIncidentsDetails({ id, begin, end }) {
+  let result = {};
+  await axiosInstance
+    .get("/get-incident-list/" + id, { params: { begin, end } })
+    .then(function (response) {
+      if (response.data) {
+        result = response.data;
+      } else {
+        result = [];
+      }
+    })
+    .catch(function (error) {
+      if (
+        (error?.response?.data && typeof error.response.data === "string") ||
+        error.response.data instanceof String
+      ) {
+        message.error(error.response.data);
+        throw error.response.data;
+      } else {
+        message.error(
+          "Error fetching Incident details. Please consult a system administrator."
+        );
+        throw "Error fetching Incident details. Please consult a system administrator.";
+      }
+    })
+    .then(function () {
+      // always executed
+    });
+
+  return result;
+}
+
 export async function updatePassword({ current_password, new_password }) {
   await axiosInstance
     .post("/update-password", {

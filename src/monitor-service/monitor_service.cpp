@@ -31,8 +31,6 @@ void MonitorService::begin_service(){
             std::cout << json_create_multiple_results(results) << std::endl;
         }
 
-
-
         for(auto* res : results){
             delete res;
         }

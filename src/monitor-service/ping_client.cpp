@@ -14,6 +14,7 @@ uint64_t get_epoch_ms(){
 PingClient::PingClient(const std::string& server, uint16_t id, int socket) : sockfd(socket){
     pkt.header.type = ICMP_ECHO;
     pkt.header.un.echo.id = htons(id);
+    memcpy(pkt.data, "pinquiry", 8);
 
     addr.sin_family = AF_INET;
     inet_aton(server.c_str(), &addr.sin_addr);
@@ -24,11 +25,10 @@ PingClient::PingInfo PingClient::send_ping(){
     pkt.header.un.echo.sequence = htons(sequence++);
     pkt.header.checksum = 0;
     pkt.header.checksum = checksum( &pkt );
-
+    std::cout << "ID: " << ntohs(pkt.header.un.echo.id ) << ", Sequence: " << sequence - 1 << std::endl;
     if (sendto(sockfd, &pkt, sizeof(pkt), 0, (sockaddr*) &addr, sizeof(addr)) <= 0){
         return {get_epoch_ms(), static_cast<uint16_t>(sequence - 1), "Unable to send to socket: " + std::string(strerror(errno))};
     }
-
 
     return {get_epoch_ms(), static_cast<uint16_t>(sequence - 1), ""};
 }

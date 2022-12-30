@@ -100,6 +100,7 @@ void HttpWorker::do_watch(){
         report_result(static_cast<MonitorResult*>(result));
 
         uint64_t time_end = get_epoch_ms();
+        std::cout << "HTTP worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
     }
 
@@ -163,6 +164,10 @@ void ContentWorker::do_watch(){
                 groups_bodies.push_back({std::move(r.body)});
                 groups.push_back({std::move(sr)});
             }
+
+            if (r.status_code != 200){
+                result->status_code_success = false;
+            }
         }
 
         result->num_of_groups = groups.size();
@@ -171,7 +176,7 @@ void ContentWorker::do_watch(){
         report_result(static_cast<MonitorResult*>(result));
 
         uint64_t time_end = get_epoch_ms();
-        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncons[0].interval_s * 1000 - (time_end - time_begin)));
     }
 
 

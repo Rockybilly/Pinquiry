@@ -32,6 +32,7 @@ struct PingResult : MonitorResult{
 
     // In case of error
     ErrorString error_str;
+    std::string traceroute;
 };
 
 struct HTTPResult : MonitorResult{
@@ -45,6 +46,7 @@ struct HTTPResult : MonitorResult{
 
     // In case of error
     ErrorString error_str;
+    std::string traceroute;
     std::vector<std::pair<std::string, std::string>> response_headers;
 };
 
@@ -52,6 +54,7 @@ struct HTTPResult : MonitorResult{
 struct ContentResult : MonitorResult{
 
     uint8_t num_of_groups = 0;
+    bool status_code_success = true;
 
     struct SingleResult{
 

@@ -34,6 +34,7 @@ private:
 
     struct PingPkt {
         icmphdr header;
+        char data[8];
     };
 
     PingPkt pkt{};

@@ -18,8 +18,8 @@ struct MonitorConnInfo {
     std::string uri;
     int port = 0;
     std::multimap<std::string, std::string> request_headers;
-    uint8_t timeout_s = 3;
-    uint8_t interval_s = 5;
+    uint8_t timeout_s;
+    uint8_t interval_s;
 };
 
 class MonitorObject{

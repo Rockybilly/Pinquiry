@@ -1,15 +1,5 @@
 import { useParams } from "react-router-dom";
 import { Row } from "antd";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import TopMenu from "./TopMenu";
 import { useState } from "react";
 import OverviewPage from "./OverviewPage";
@@ -39,7 +29,7 @@ export default function MonitorDetail() {
       <TopMenu setCurrentPage={setCurrentPage} />
 
       {currentPage === "1" ? <OverviewPage monId={monId} /> : null}
-      {/*{currentPage === "2" ? <IncidentDetail MonId={MonId} /> : null}*/}
+      {currentPage === "2" ? <IncidentDetail monId={monId} /> : null}
       {currentPage === "3" ? <DangerZone monId={monId} /> : null}
     </>
   );

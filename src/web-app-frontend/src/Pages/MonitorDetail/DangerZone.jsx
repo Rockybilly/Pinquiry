@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { deleteUser, removeMonitor } from "../../Services/backendComm";
-import { Button, Form, Input, Spin } from "antd";
+import { removeMonitor } from "../../Services/backendComm";
+import { Button, Form, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 
 export default function DangerZone({ monId }) {
@@ -13,7 +13,7 @@ export default function DangerZone({ monId }) {
 
     removeMonitor(monId)
       .then(function () {
-        navigate("/");
+        navigate("/monitors");
       })
       .catch(function (error) {})
       .then(function () {
