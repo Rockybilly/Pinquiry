@@ -41,7 +41,7 @@ function IncidentPanelContent({ incident }) {
         Object.entries(incident.debugInfo.response_headers).length > 0
           ? Object.entries(incident.debugInfo.response_headers).map(
               ([key, value]) => (
-                <div style={{ paddingTop: "1rem" }}>
+                <div style={{ paddingTop: "1rem", paddingLeft: "4rem" }}>
                   {key}:{value}
                 </div>
               )
