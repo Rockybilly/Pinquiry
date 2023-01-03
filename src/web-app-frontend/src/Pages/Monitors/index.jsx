@@ -185,9 +185,9 @@ export function Monitors() {
           )}
         />
         <Column
-          title="Avg Response Time Ms (Last Hour)"
-          dataIndex="responseAvgMsLastHour"
-          key="responseAvgMsLastHour"
+          title="Avg Response Time Ms (Last 50 Requests)"
+          dataIndex="responseAvgMsLast50"
+          key="responseAvgMsLast50"
           render={(_, record) => (
             <span style={{ fontSize: "2rem" }}>
               {record.responseTimes.length <= 1
@@ -203,7 +203,7 @@ export function Monitors() {
         />
 
         <Column
-          title="Response Times (Last Hour)"
+          title="Response Times (Last 50 requests)"
           dataIndex="responseTimes"
           key="responseTimes"
           render={(_, record) => (
