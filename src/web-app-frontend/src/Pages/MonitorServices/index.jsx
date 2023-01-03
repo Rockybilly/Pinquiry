@@ -185,6 +185,22 @@ export default function MonitorServices() {
           )}
         />
         <Column
+          title="Status"
+          dataIndex="online"
+          key="online"
+          render={(_, record) => (
+            <span
+              style={{
+                fontSize: "2rem",
+                fontWeight: "600",
+                color: record.isOnline ? "green" : "red",
+              }}
+            >
+              {record.isOnline ? "Online" : "Offline"}
+            </span>
+          )}
+        />
+        <Column
           title="IP"
           dataIndex="ip"
           key="ip"
