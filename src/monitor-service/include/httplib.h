@@ -8,7 +8,7 @@
 #ifndef CPPHTTPLIB_HTTPLIB_H
 #define CPPHTTPLIB_HTTPLIB_H
 
-#define CPPHTTPLIB_VERSION "0.11.0"
+#define CPPHTTPLIB_VERSION "0.11.3"
 
 /*
  * Configuration
@@ -68,6 +68,10 @@
 
 #ifndef CPPHTTPLIB_REDIRECT_MAX_COUNT
 #define CPPHTTPLIB_REDIRECT_MAX_COUNT 20
+#endif
+
+#ifndef CPPHTTPLIB_MULTIPART_FORM_DATA_FILE_MAX_COUNT
+#define CPPHTTPLIB_MULTIPART_FORM_DATA_FILE_MAX_COUNT 1024
 #endif
 
 #ifndef CPPHTTPLIB_PAYLOAD_MAX_LENGTH
@@ -168,7 +172,9 @@ using socket_t = SOCKET;
 #else // not _WIN32
 
 #include <arpa/inet.h>
+#ifndef _AIX
 #include <ifaddrs.h>
+#endif
 #include <net/if.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -183,6 +189,7 @@ using socket_t = SOCKET;
 #include <pthread.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <unistd.h>
 
 using socket_t = int;
@@ -553,9 +560,8 @@ public:
     {
       std::unique_lock<std::mutex> lock(mutex_);
       shutdown_ = true;
+      cond_.notify_all();
     }
-
-    cond_.notify_all();
 
     // Join...
     for (auto &t : threads_) {
@@ -896,6 +902,7 @@ public:
   Result Head(const std::string &path, const Headers &headers);
 
   Result Post(const std::string &path);
+  Result Post(const std::string &path, const Headers &headers);
   Result Post(const std::string &path, const char *body, size_t content_length,
               const std::string &content_type);
   Result Post(const std::string &path, const Headers &headers, const char *body,
@@ -948,6 +955,11 @@ public:
   Result Put(const std::string &path, const Params &params);
   Result Put(const std::string &path, const Headers &headers,
              const Params &params);
+  Result Put(const std::string &path, const MultipartFormDataItems &items);
+  Result Put(const std::string &path, const Headers &headers,
+             const MultipartFormDataItems &items);
+  Result Put(const std::string &path, const Headers &headers,
+             const MultipartFormDataItems &items, const std::string &boundary);
 
   Result Patch(const std::string &path);
   Result Patch(const std::string &path, const char *body, size_t content_length,
@@ -1252,6 +1264,7 @@ public:
   Result Head(const std::string &path, const Headers &headers);
 
   Result Post(const std::string &path);
+  Result Post(const std::string &path, const Headers &headers);
   Result Post(const std::string &path, const char *body, size_t content_length,
               const std::string &content_type);
   Result Post(const std::string &path, const Headers &headers, const char *body,
@@ -1303,6 +1316,11 @@ public:
   Result Put(const std::string &path, const Params &params);
   Result Put(const std::string &path, const Headers &headers,
              const Params &params);
+  Result Put(const std::string &path, const MultipartFormDataItems &items);
+  Result Put(const std::string &path, const Headers &headers,
+             const MultipartFormDataItems &items);
+  Result Put(const std::string &path, const Headers &headers,
+             const MultipartFormDataItems &items, const std::string &boundary);
   Result Patch(const std::string &path);
   Result Patch(const std::string &path, const char *body, size_t content_length,
                const std::string &content_type);
@@ -1518,7 +1536,7 @@ inline void duration_to_sec_and_usec(const T &duration, U callback) {
   auto usec = std::chrono::duration_cast<std::chrono::microseconds>(
                   duration - std::chrono::seconds(sec))
                   .count();
-  callback(sec, usec);
+  callback(static_cast<time_t>(sec), static_cast<time_t>(usec));
 }
 
 template <typename T>
@@ -2570,6 +2588,33 @@ socket_t create_socket(const std::string &host, const std::string &ip, int port,
     hints.ai_flags = socket_flags;
   }
 
+#ifndef _WIN32
+  if (hints.ai_family == AF_UNIX) {
+    const auto addrlen = host.length();
+    if (addrlen > sizeof(sockaddr_un::sun_path)) return INVALID_SOCKET;
+
+    auto sock = socket(hints.ai_family, hints.ai_socktype, hints.ai_protocol);
+    if (sock != INVALID_SOCKET) {
+      sockaddr_un addr;
+      addr.sun_family = AF_UNIX;
+      std::copy(host.begin(), host.end(), addr.sun_path);
+
+      hints.ai_addr = reinterpret_cast<sockaddr *>(&addr);
+      hints.ai_addrlen = static_cast<socklen_t>(
+          sizeof(addr) - sizeof(addr.sun_path) + addrlen);
+
+      fcntl(sock, F_SETFD, FD_CLOEXEC);
+      if (socket_options) { socket_options(sock); }
+
+      if (!bind_or_connect(sock, hints)) {
+        close_socket(sock);
+        sock = INVALID_SOCKET;
+      }
+    }
+    return sock;
+  }
+#endif
+
   auto service = std::to_string(port);
 
   if (getaddrinfo(node, service.c_str(), &hints, &result)) {
@@ -2681,7 +2726,7 @@ inline bool bind_ip_address(socket_t sock, const std::string &host) {
   return ret;
 }
 
-#if !defined _WIN32 && !defined ANDROID
+#if !defined _WIN32 && !defined ANDROID && !defined _AIX
 #define USE_IF2IP
 #endif
 
@@ -2831,6 +2876,24 @@ inline void get_remote_ip_and_port(socket_t sock, std::string &ip, int &port) {
 
   if (!getpeername(sock, reinterpret_cast<struct sockaddr *>(&addr),
                    &addr_len)) {
+#ifndef _WIN32
+    if (addr.ss_family == AF_UNIX) {
+#if defined(__linux__)
+      struct ucred ucred;
+      socklen_t len = sizeof(ucred);
+      if (getsockopt(sock, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == 0) {
+        port = ucred.pid;
+      }
+#elif defined(SOL_LOCAL) && defined(SO_PEERPID) // __APPLE__
+      pid_t pid;
+      socklen_t len = sizeof(pid);
+      if (getsockopt(sock, SOL_LOCAL, SO_PEERPID, &pid, &len) == 0) {
+        port = pid;
+      }
+#endif
+      return;
+    }
+#endif
     get_remote_ip_and_port(addr, addr_len, ip, port);
   }
 }
@@ -4039,6 +4102,44 @@ inline std::string make_multipart_data_boundary() {
   return result;
 }
 
+inline bool is_multipart_boundary_chars_valid(const std::string &boundary) {
+  auto valid = true;
+  for (size_t i = 0; i < boundary.size(); i++) {
+    auto c = boundary[i];
+    if (!std::isalnum(c) && c != '-' && c != '_') {
+      valid = false;
+      break;
+    }
+  }
+  return valid;
+}
+
+inline std::string
+serialize_multipart_formdata(const MultipartFormDataItems &items,
+                             const std::string &boundary,
+                             std::string &content_type) {
+  std::string body;
+
+  for (const auto &item : items) {
+    body += "--" + boundary + "\r\n";
+    body += "Content-Disposition: form-data; name=\"" + item.name + "\"";
+    if (!item.filename.empty()) {
+      body += "; filename=\"" + item.filename + "\"";
+    }
+    body += "\r\n";
+    if (!item.content_type.empty()) {
+      body += "Content-Type: " + item.content_type + "\r\n";
+    }
+    body += "\r\n";
+    body += item.content + "\r\n";
+  }
+
+  body += "--" + boundary + "--\r\n";
+
+  content_type = "multipart/form-data; boundary=" + boundary;
+  return body;
+}
+
 inline std::pair<size_t, size_t>
 get_range_offset_and_length(const Request &req, size_t content_length,
                             size_t index) {
@@ -4645,7 +4746,8 @@ inline bool SocketStream::is_readable() const {
 }
 
 inline bool SocketStream::is_writable() const {
-  return select_write(sock_, write_timeout_sec_, write_timeout_usec_) > 0;
+  return select_write(sock_, write_timeout_sec_, write_timeout_usec_) > 0 &&
+         is_socket_alive(sock_);
 }
 
 inline ssize_t SocketStream::read(char *ptr, size_t size) {
@@ -5182,6 +5284,7 @@ Server::write_content_with_provider(Stream &strm, const Request &req,
 
 inline bool Server::read_content(Stream &strm, Request &req, Response &res) {
   MultipartFormDataMap::iterator cur;
+  auto file_count = 0;
   if (read_content_core(
           strm, req, res,
           // Regular
@@ -5192,6 +5295,9 @@ inline bool Server::read_content(Stream &strm, Request &req, Response &res) {
           },
           // Multipart
           [&](const MultipartFormData &file) {
+            if (file_count++ == CPPHTTPLIB_MULTIPART_FORM_DATA_FILE_MAX_COUNT) {
+              return false;
+            }
             cur = req.files.emplace(file.name, file);
             return true;
           },
@@ -5749,7 +5855,16 @@ Server::process_request(Stream &strm, bool close_connection,
       routed = true;
     } else {
       res.status = 500;
-      res.set_header("EXCEPTION_WHAT", e.what());
+      std::string val;
+      auto s = e.what();
+      for (size_t i = 0; s[i]; i++) {
+        switch (s[i]) {
+        case '\r': val += "\\r"; break;
+        case '\n': val += "\\n"; break;
+        default: val += s[i]; break;
+        }
+      }
+      res.set_header("EXCEPTION_WHAT", val);
     }
   } catch (...) {
     if (exception_handler_) {
@@ -6648,6 +6763,11 @@ inline Result ClientImpl::Post(const std::string &path) {
   return Post(path, std::string(), std::string());
 }
 
+inline Result ClientImpl::Post(const std::string &path,
+                               const Headers &headers) {
+  return Post(path, headers, nullptr, 0, std::string());
+}
+
 inline Result ClientImpl::Post(const std::string &path, const char *body,
                                size_t content_length,
                                const std::string &content_type) {
@@ -6720,37 +6840,22 @@ inline Result ClientImpl::Post(const std::string &path,
 
 inline Result ClientImpl::Post(const std::string &path, const Headers &headers,
                                const MultipartFormDataItems &items) {
-  return Post(path, headers, items, detail::make_multipart_data_boundary());
+  std::string content_type;
+  const auto &body = detail::serialize_multipart_formdata(
+      items, detail::make_multipart_data_boundary(), content_type);
+  return Post(path, headers, body, content_type.c_str());
 }
+
 inline Result ClientImpl::Post(const std::string &path, const Headers &headers,
                                const MultipartFormDataItems &items,
                                const std::string &boundary) {
-  for (size_t i = 0; i < boundary.size(); i++) {
-    char c = boundary[i];
-    if (!std::isalnum(c) && c != '-' && c != '_') {
-      return Result{nullptr, Error::UnsupportedMultipartBoundaryChars};
-    }
+  if (!detail::is_multipart_boundary_chars_valid(boundary)) {
+    return Result{nullptr, Error::UnsupportedMultipartBoundaryChars};
   }
 
-  std::string body;
-
-  for (const auto &item : items) {
-    body += "--" + boundary + "\r\n";
-    body += "Content-Disposition: form-data; name=\"" + item.name + "\"";
-    if (!item.filename.empty()) {
-      body += "; filename=\"" + item.filename + "\"";
-    }
-    body += "\r\n";
-    if (!item.content_type.empty()) {
-      body += "Content-Type: " + item.content_type + "\r\n";
-    }
-    body += "\r\n";
-    body += item.content + "\r\n";
-  }
-
-  body += "--" + boundary + "--\r\n";
-
-  std::string content_type = "multipart/form-data; boundary=" + boundary;
+  std::string content_type;
+  const auto &body =
+      detail::serialize_multipart_formdata(items, boundary, content_type);
   return Post(path, headers, body, content_type.c_str());
 }
 
@@ -6821,6 +6926,32 @@ inline Result ClientImpl::Put(const std::string &path, const Headers &headers,
                               const Params &params) {
   auto query = detail::params_to_query_str(params);
   return Put(path, headers, query, "application/x-www-form-urlencoded");
+}
+
+inline Result ClientImpl::Put(const std::string &path,
+                              const MultipartFormDataItems &items) {
+  return Put(path, Headers(), items);
+}
+
+inline Result ClientImpl::Put(const std::string &path, const Headers &headers,
+                              const MultipartFormDataItems &items) {
+  std::string content_type;
+  const auto &body = detail::serialize_multipart_formdata(
+      items, detail::make_multipart_data_boundary(), content_type);
+  return Put(path, headers, body, content_type);
+}
+
+inline Result ClientImpl::Put(const std::string &path, const Headers &headers,
+                              const MultipartFormDataItems &items,
+                              const std::string &boundary) {
+  if (!detail::is_multipart_boundary_chars_valid(boundary)) {
+    return Result{nullptr, Error::UnsupportedMultipartBoundaryChars};
+  }
+
+  std::string content_type;
+  const auto &body =
+      detail::serialize_multipart_formdata(items, boundary, content_type);
+  return Put(path, headers, body, content_type);
 }
 
 inline Result ClientImpl::Patch(const std::string &path) {
@@ -6948,9 +7079,7 @@ inline size_t ClientImpl::is_socket_open() const {
   return socket_.is_open();
 }
 
-inline socket_t ClientImpl::socket() const {
-  return socket_.sock;
-}
+inline socket_t ClientImpl::socket() const { return socket_.sock; }
 
 inline void ClientImpl::stop() {
   std::lock_guard<std::mutex> guard(socket_mutex_);
@@ -7255,8 +7384,8 @@ inline bool SSLSocketStream::is_readable() const {
 }
 
 inline bool SSLSocketStream::is_writable() const {
-  return detail::select_write(sock_, write_timeout_sec_, write_timeout_usec_) >
-         0;
+  return select_write(sock_, write_timeout_sec_, write_timeout_usec_) > 0 &&
+         is_socket_alive(sock_);
 }
 
 inline ssize_t SSLSocketStream::read(char *ptr, size_t size) {
@@ -7858,13 +7987,13 @@ inline Client::Client(const std::string &scheme_host_port,
 
     if (is_ssl) {
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-      cli_ = detail::make_unique<SSLClient>(host.c_str(), port,
-                                            client_cert_path, client_key_path);
+      cli_ = detail::make_unique<SSLClient>(host, port, client_cert_path,
+                                            client_key_path);
       is_ssl_ = is_ssl;
 #endif
     } else {
-      cli_ = detail::make_unique<ClientImpl>(host.c_str(), port,
-                                             client_cert_path, client_key_path);
+      cli_ = detail::make_unique<ClientImpl>(host, port, client_cert_path,
+                                             client_key_path);
     }
   } else {
     cli_ = detail::make_unique<ClientImpl>(scheme_host_port, 80,
@@ -7962,6 +8091,9 @@ inline Result Client::Head(const std::string &path, const Headers &headers) {
 }
 
 inline Result Client::Post(const std::string &path) { return cli_->Post(path); }
+inline Result Client::Post(const std::string &path, const Headers &headers) {
+  return cli_->Post(path, headers);
+}
 inline Result Client::Post(const std::string &path, const char *body,
                            size_t content_length,
                            const std::string &content_type) {
@@ -8073,6 +8205,19 @@ inline Result Client::Put(const std::string &path, const Params &params) {
 inline Result Client::Put(const std::string &path, const Headers &headers,
                           const Params &params) {
   return cli_->Put(path, headers, params);
+}
+inline Result Client::Put(const std::string &path,
+                          const MultipartFormDataItems &items) {
+  return cli_->Put(path, items);
+}
+inline Result Client::Put(const std::string &path, const Headers &headers,
+                          const MultipartFormDataItems &items) {
+  return cli_->Put(path, headers, items);
+}
+inline Result Client::Put(const std::string &path, const Headers &headers,
+                          const MultipartFormDataItems &items,
+                          const std::string &boundary) {
+  return cli_->Put(path, headers, items, boundary);
 }
 inline Result Client::Patch(const std::string &path) {
   return cli_->Patch(path);
@@ -8278,5 +8423,9 @@ inline SSL_CTX *Client::ssl_context() const {
 // ----------------------------------------------------------------------------
 
 } // namespace httplib
+
+#if defined(_WIN32) && defined(CPPHTTPLIB_USE_POLL)
+#undef poll
+#endif
 
 #endif // CPPHTTPLIB_HTTPLIB_H

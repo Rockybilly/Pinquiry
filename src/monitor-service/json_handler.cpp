@@ -202,7 +202,7 @@ std::pair<std::vector<MonitorObject>, ErrorString> json_parse_multiple_monitors(
     std::vector<MonitorObject> result;
 
     rapidjson::Document d;
-    std::cout << body << std::endl;
+    //std::cout << body << std::endl;
     if (d.Parse<0>( body.c_str() ).HasParseError() ){
         return {{}, "JSON parsing error."};
     }

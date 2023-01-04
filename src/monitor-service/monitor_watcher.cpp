@@ -110,11 +110,11 @@ void HttpWorker::do_watch(){
         uint64_t time_end = get_epoch_ms();
 
         if ( (time_end - time_begin) < mon.moncon.interval_s * 1000){
-            std::cout << "HTTP worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
+            //std::cout << "[" << res.status_code << ", " << result->error_str << "] " << "HTTP worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
         }
         else{
-            std::cout << "HTTP worker not waiting." << std::endl;
+            //std::cout << "HTTP worker not waiting." << std::endl;
         }
 
     }

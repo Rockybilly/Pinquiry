@@ -3,6 +3,8 @@
 //
 
 #include "backend_receiver.h"
+
+#include <utility>
 #include "json_handler.h"
 
 BackendReceiver::BackendReceiver(std::string ip,
@@ -14,12 +16,13 @@ BackendReceiver::BackendReceiver(std::string ip,
                                  update_monitor_handler(update_mon_handler){
 
     svr.Post( "/add_monitor", [&](const httplib::Request& req, httplib::Response& res) {
-        std::cout << "API: /add_monitor called" << std::endl;
+        std::cout << "API: /add_monitor called: " << req.body << std::endl;
         auto [mon, error_st] = json_parse_monitor(req.body);
+        std::cout << "MonID: " << mon.mon_id << "Error st:" << error_st << std::endl;
 
         if (error_st.empty()){
-            auto error_st_handler = add_monitor_handler(mon);
-
+            //auto error_st_handler = add_monitor_handler(mon);
+            std::string error_st_handler;
             if (error_st_handler.empty()){
                 res.status = 200;
             }
@@ -79,6 +82,27 @@ BackendReceiver::BackendReceiver(std::string ip,
     svr.Get( "/i_am_online", [&](const httplib::Request& req, httplib::Response& res) {
         res.status = 200;
         res.set_content("", "text/plain");
+    });
+
+    svr.set_error_handler([](const auto& req, auto& res) {
+        auto fmt = "<p>Error Status: <span style='color:red;'>%d</span></p>";
+        char buf[BUFSIZ];
+        snprintf(buf, sizeof(buf), fmt, res.status);
+        res.set_content(buf, "text/html");
+    });
+
+    svr.set_exception_handler([](const auto& req, auto& res, std::exception_ptr ep) {
+        auto fmt = "<h1>Error 500</h1><p>%s</p>";
+        char buf[BUFSIZ];
+        try {
+            std::rethrow_exception(std::move(ep));
+        } catch (std::exception &e) {
+            snprintf(buf, sizeof(buf), fmt, e.what());
+        } catch (...) { // See the following NOTE
+            snprintf(buf, sizeof(buf), fmt, "Unknown Exception");
+        }
+        res.set_content(buf, "text/html");
+        res.status = 500;
     });
 }
 

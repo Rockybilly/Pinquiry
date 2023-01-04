@@ -27,8 +27,10 @@ void MonitorService::begin_service(){
         auto results = watcher.get_results();
         if(!results.empty()){
 
-            backend_client.report_results(json_create_multiple_results(results));
-            std::cout << json_create_multiple_results(results) << std::endl;
+            //backend_client.report_results(json_create_multiple_results(results));
+            std::cout << "Simulated result count: " << results.size() << std::endl;
+
+            //std::cout << json_create_multiple_results(results) << std::endl;
         }
 
         for(auto* res : results){
