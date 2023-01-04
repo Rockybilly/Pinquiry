@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -36,7 +37,7 @@ public class ServiceWorkerCommunicatorController {
             swc.start();
         }
     }
-
+    @Transactional
     public synchronized boolean addEvent(ServiceWorkerCommunicatorEventEntry event){
         try {
             lswcee.push(event);
@@ -46,7 +47,7 @@ public class ServiceWorkerCommunicatorController {
         }
         return true;
     }
-
+    @Transactional
     public synchronized ServiceWorkerCommunicatorEventEntry getEntry(){
         if(lswcee.empty()){
             return null;

@@ -21,6 +21,9 @@ public class ServiceHTTPMonitorResponse extends ServiceMonitorResponse {
     @JsonProperty("success_codes")
     private List<Integer> successCodes;
 
+    @JsonProperty("search_string")
+    private String searchString;
+
     public ServiceHTTPMonitorResponse() {
     }
 
@@ -78,5 +81,13 @@ public class ServiceHTTPMonitorResponse extends ServiceMonitorResponse {
 
     public void setSuccessCodes(List<Integer> successCodes) {
         this.successCodes = successCodes;
+    }
+
+    public String getSearchString() {
+        return searchString;
+    }
+
+    public void setSearchString(String searchString) {
+        this.searchString = searchString;
     }
 }

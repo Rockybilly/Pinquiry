@@ -8,6 +8,7 @@ import com.pinquiry.api.model.PostgreSQLEnumType;
 import com.pinquiry.api.model.monitor.Monitor;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -38,7 +39,7 @@ MonitorResult {
     private long id;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Monitor monitor;
 
     private boolean incident;

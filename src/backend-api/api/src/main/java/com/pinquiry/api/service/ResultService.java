@@ -98,6 +98,7 @@ public class ResultService implements IResultService {
                 List<MonitorResult> lmr = pmr.getContent();
                 TimestampResponseTime trt = new TimestampResponseTime();
                 double total = 0;
+                int zeroResponseTimes = 0;
                 for (MonitorResult mr : lmr) {
                     if (first == -1) {
                         first = mr.getTimestamp();
@@ -106,39 +107,44 @@ public class ResultService implements IResultService {
 
                         HTTPMonitorResult hmr = (HTTPMonitorResult) mr;
                         total += hmr.getResponseTime();
+                        if(hmr.getResponseTime() == 0){
+                            zeroResponseTimes++;
+                        }
 
                     }
                     if (mr.getType() == MonitorResult.ResultType.ping) {
                         assert mr instanceof PingMonitorResult;
                         PingMonitorResult pingmr = (PingMonitorResult) mr;
                         total += pingmr.getResponseTime();
+                        if(pingmr.getResponseTime() == 0){
+                            zeroResponseTimes++;
+                        }
 
                     }
-                /*if(mr.getType() == MonitorResult.ResultType.content){
-                        ContentMonitorEndResult cmer = (ContentMonitorEndResult) mr;
+                if(mr.getType() == MonitorResult.ResultType.content){
+                    assert mr instanceof ContentMonitorEndResult;
+                    ContentMonitorEndResult cmer = (ContentMonitorEndResult) mr;
 
-                        int total1 = 0;
-                        int count = 0;
+                        double total2 = 0;
                         for(ContentMonitorResultGroup cmrg : cmer.getGroups()){
+                            int total1 = 0;
                             for(ContentMonitorResult cmr: cmrg.getResults()){
                                 total1 += cmr.getResponseTime();
-                                count++;
                             }
+                            double averg = total1/(double)cmrg.getResults().size();
+                            total2 += averg;
                         }
 
-                        if(count != 0) {
-                            trt.setResponseTime((double) total / count);
-                        }
-                        else{
-                            trt.setResponseTime(0);
-                        }
-                        trt.setTimestamp(cmer.getTimestamp());
 
-                } */
+                        if(cmer.getGroups().size() != 0) {
+                            total += total2 / cmer.getGroups().size();
+                        }
+
+                }
                 }
                 if (first != -1) {
                     trt.setTimestamp(first);
-                    trt.setResponseTime(total / pmr.getTotalElements());
+                    trt.setResponseTime(total / (pmr.getTotalElements() - zeroResponseTimes));
                     ltrt.add(trt);
                 }
                 temp_begin = temp_end + 1;
@@ -162,12 +168,19 @@ public class ResultService implements IResultService {
                 if (mr.getType() == MonitorResult.ResultType.http) {
 
                     HTTPMonitorResult hmr = (HTTPMonitorResult) mr;
+                    if(hmr.getResponseTime() == 0 ){
+                        continue;
+                    }
                     trt.setResponseTime(hmr.getResponseTime());
+
 
                 }
                 if (mr.getType() == MonitorResult.ResultType.ping) {
 
                     PingMonitorResult pingmr = (PingMonitorResult) mr;
+                    if(pingmr.getResponseTime() == 0 ){
+                        continue;
+                    }
                     trt.setResponseTime(pingmr.getResponseTime());
 
                 }

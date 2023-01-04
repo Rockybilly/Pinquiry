@@ -81,7 +81,6 @@ public class ResultController {
 
                             hmdInfo.setErrorString(shmrr.getDebugInfo().getErrorString());
                             hmdInfo.setResponseHeaders(shmrr.getDebugInfo().getResponseHeaders());
-
                             hmr.setDebugInfo(hmdInfo);
                             hmdInfo.setResult(hmr);
 
@@ -102,6 +101,7 @@ public class ResultController {
                         ContentMonitorEndResult cmer = new ContentMonitorEndResult();
                         ServiceContentMonitorEndResultRequest scmerr = (ServiceContentMonitorEndResultRequest) smrr;
                         cmer.setTimestamp(scmerr.getTimestamp());
+                        cmer.setSuccessCodeStatus(scmerr.isStatus_code_success());
                         try {
                             monitorService.findMonitorById(smrr.getMonId());
                         } catch (Exception e) {
@@ -144,7 +144,6 @@ public class ResultController {
                         try {
                             succ = resultService.addResult(cmer);
                         } catch (Exception e) {
-                            e.printStackTrace();
                             succ = false;
                         }
                         if(cmer.isIncident()){
@@ -188,9 +187,7 @@ public class ResultController {
                         succ = resultService.addResult(pmr);
                     }
 
-                    if (succ)
-                        System.out.println(smrr.getMonId() + " saved ");
-                    else
+                    if (!succ)
                         System.out.println(smrr.getMonId() + " could not be saved ");
                 }
                 else{

@@ -16,7 +16,7 @@ public class HTTPMonitorResult extends MonitorResult {
     private boolean statusCodeSuccess;
     private boolean responseHeaderSuccess;
     private boolean searchStringSuccess;
-    @OneToOne(cascade= CascadeType.ALL)
+    @OneToOne(cascade= CascadeType.ALL, orphanRemoval = true)
     private HTTPMonitorDebugInfo debugInfo;
 
 

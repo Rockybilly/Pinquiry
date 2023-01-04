@@ -15,6 +15,9 @@ public class ContentMonitorEndResult extends MonitorResult {
     @JsonProperty("num_of_groups")
     private int numOfGroups;
 
+    @JsonProperty("success_code_status")
+    private boolean successCodeStatus;
+
     @OneToMany(cascade = CascadeType.ALL)
     private List<ContentMonitorResultGroup> groups;
 
@@ -29,7 +32,9 @@ public class ContentMonitorEndResult extends MonitorResult {
 
     public void setNumOfGroups(int numOfGroups) {
         this.numOfGroups = numOfGroups;
-        this.setIncident(this.numOfGroups > 1);
+        if(successCodeStatus) {
+            this.setIncident(this.numOfGroups > 1);
+        }
     }
 
     public List<ContentMonitorResultGroup> getGroups() {
@@ -38,5 +43,14 @@ public class ContentMonitorEndResult extends MonitorResult {
 
     public void setGroups(List<ContentMonitorResultGroup> groups) {
         this.groups = groups;
+    }
+
+    public boolean isSuccessCodeStatus() {
+        return successCodeStatus;
+    }
+
+    public void setSuccessCodeStatus(boolean successCodeStatus) {
+        this.successCodeStatus = successCodeStatus;
+        this.setIncident(!successCodeStatus);
     }
 }
