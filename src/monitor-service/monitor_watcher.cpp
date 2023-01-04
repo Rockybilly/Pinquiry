@@ -28,7 +28,15 @@ void PingWorker::do_watch(){
 
         //std::cout << "Error string: " << res.error << std::endl;
         uint64_t time_end = get_epoch_ms();
-        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+
+        if ( (time_end - time_begin) < mon.moncon.interval_s * 1000){
+            std::cout << "Ping worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+        }
+        else{
+            std::cout << "Ping worker not waiting." << std::endl;
+        }
     }
 
     stopped = true;
@@ -64,10 +72,10 @@ void HttpWorker::do_watch(){
         else{
             result->status_code_success = false;
             if(res.status_code == 0){
-                result->error_str += "Error: " + res.error_message;
+                result->error_str += "Error: " + res.error_message + "\n";
             }
             else if(res.status_code != 0){
-                result->error_str += "HTTP " + std::to_string(res.status_code);
+                result->error_str += "HTTP " + std::to_string(res.status_code) + "\n";
             }
         }
 
@@ -100,8 +108,15 @@ void HttpWorker::do_watch(){
         report_result(static_cast<MonitorResult*>(result));
 
         uint64_t time_end = get_epoch_ms();
-        std::cout << "HTTP worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+
+        if ( (time_end - time_begin) < mon.moncon.interval_s * 1000){
+            std::cout << "HTTP worker, Waiting for " << mon.moncon.interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncon.interval_s * 1000 - (time_end - time_begin)));
+        }
+        else{
+            std::cout << "HTTP worker not waiting." << std::endl;
+        }
+
     }
 
     stopped = true;
@@ -176,7 +191,15 @@ void ContentWorker::do_watch(){
         report_result(static_cast<MonitorResult*>(result));
 
         uint64_t time_end = get_epoch_ms();
-        std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncons[0].interval_s * 1000 - (time_end - time_begin)));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncons[0].interval_s * 1000 - (time_end - time_begin)));
+
+        if ( (time_end - time_begin) < mon.moncons[0].interval_s * 1000){
+            std::cout << "Content worker, Waiting for " << mon.moncons[0].interval_s * 1000 - (time_end - time_begin) << " ms. Elapsed: " << time_end - time_begin << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(mon.moncons[0].interval_s * 1000 - (time_end - time_begin)));
+        }
+        else{
+            std::cout << "Content worker not waiting." << std::endl;
+        }
     }
 
 

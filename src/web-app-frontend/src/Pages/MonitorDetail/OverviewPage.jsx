@@ -135,7 +135,7 @@ function Details({ details }) {
             header={"Success Response Headers:"}
             value={Object.entries(details.responseHeaders).map(
               ([key, value]) => (
-                <div style={{ paddingTop: "1rem" }}>
+                <div style={{ paddingTop: "1rem", paddingLeft: "4rem" }}>
                   {key}:{value}
                 </div>
               )
