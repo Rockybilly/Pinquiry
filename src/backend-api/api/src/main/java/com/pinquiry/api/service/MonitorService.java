@@ -37,8 +37,12 @@ public class MonitorService implements IMonitorService {
     @Override
     public boolean createMonitor(User user, Monitor monitor){
         monitor.setMonUser( user );
-        monitorRepository.save(monitor);
-
+        try {
+            monitorRepository.save(monitor);
+        }
+        catch (Exception e){
+            return false;
+        }
         serviceWorkerService.addMonitorToServiceWorkerByLocation(monitor.getLocation(), monitor, ServiceWorkerService.OperationType.ADD);
 
         return true;
@@ -92,7 +96,6 @@ public class MonitorService implements IMonitorService {
 
     @Override
     public List<Monitor> findMonitorByUserId(User user) {
-
         return new ArrayList<>(monitorRepository.findAllByMonUser(user, Pageable.unpaged()));
     }
 
@@ -114,9 +117,9 @@ public class MonitorService implements IMonitorService {
             return false;
         }
 
-            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
+
         try {
-            monitorRepository.delete(m);
+            monitorRepository.deleteById(m.getId());
         }
         catch (Exception e){
             try {
@@ -131,13 +134,12 @@ public class MonitorService implements IMonitorService {
                 try {
                     emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
                 }catch (Exception e1){
-                    e1.printStackTrace();
                     System.out.println("Could not sent e mail");
                 }
                 return false;
             }
+            serviceWorkerService.addMonitorToServiceWorkerByLocation(m.getLocation(), m, ServiceWorkerService.OperationType.DELETE);
             removeMonitor(m.getId());
-
         }
         return true;
     }
@@ -185,6 +187,54 @@ public class MonitorService implements IMonitorService {
     @Override
     public List<TimestampResponseTime> findResponseTimesInTimeSpan(Monitor m, long begin, long end){
         List<MonitorResult> lmr = resultService.findResultsInTimeSpan(m.getId(),begin,end).getContent();
+        List<TimestampResponseTime> r = new ArrayList<>();
+        if(m.getType() == Monitor.MonitorType.http){
+            for(MonitorResult mr: lmr){
+                HTTPMonitorResult hmr = (HTTPMonitorResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                trt.setResponseTime(hmr.getResponseTime());
+                trt.setTimestamp(hmr.getTimestamp());
+                r.add(trt);
+            }
+        }
+        if(m.getType() == Monitor.MonitorType.ping){
+            for(MonitorResult mr: lmr){
+                PingMonitorResult pmr = (PingMonitorResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                trt.setResponseTime(pmr.getResponseTime());
+                trt.setTimestamp(pmr.getTimestamp());
+                r.add(trt);
+            }
+        }
+        if(m.getType() == Monitor.MonitorType.content){
+            for(MonitorResult mr: lmr){
+                ContentMonitorEndResult cmer = (ContentMonitorEndResult) mr;
+                TimestampResponseTime trt = new TimestampResponseTime();
+                int total = 0;
+                int count = 0;
+                for(ContentMonitorResultGroup cmrg : cmer.getGroups()){
+                    for(ContentMonitorResult cmr: cmrg.getResults()){
+                        total += cmr.getResponseTime();
+                        count++;
+                    }
+                }
+
+                if(count != 0) {
+                    trt.setResponseTime((double) total / count);
+                }
+                else{
+                    trt.setResponseTime(0);
+                }
+                trt.setTimestamp(cmer.getTimestamp());
+                r.add(trt);
+            }
+        }
+        return r;
+    }
+
+    @Override
+    public List<TimestampResponseTime> findLastXResponses(Monitor m, int x) {
+        List<MonitorResult> lmr =  resultService.findLastXResults(m.getId(), x);
         List<TimestampResponseTime> r = new ArrayList<>();
         if(m.getType() == Monitor.MonitorType.http){
             for(MonitorResult mr: lmr){

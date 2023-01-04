@@ -25,4 +25,6 @@ public interface IMonitorService {
     int getIncidentCountInTimeSpan(long id, long beginTime, long endTime);
 
     List<TimestampResponseTime> findResponseTimesInTimeSpan(Monitor m, long begin, long end);
+
+    List<TimestampResponseTime> findLastXResponses(Monitor monitor, int x);
 }

@@ -7,12 +7,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pinquiry.api.model.PostgreSQLEnumType;
 import com.pinquiry.api.model.User;
 import com.pinquiry.api.model.results.MonitorResult;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -53,7 +52,7 @@ public abstract class Monitor {
     @JsonProperty("interval_s")
     private int intervalInSeconds;
 
-    @OneToMany(mappedBy="monitor", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "monitor", cascade = CascadeType.ALL)
     private List<MonitorResult> results;
 
     @JsonProperty("monitor_location")

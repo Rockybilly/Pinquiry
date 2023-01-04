@@ -54,22 +54,15 @@ public class ServiceWorkerCommunicator extends Thread {
                             eventEntry.getSw().setActive(false);
                             System.out.println("Could not add monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
                             String text = "could not add " + eventEntry.getMonitor().getType() + " monitor with id " + eventEntry.getMonitor().getMon_id() + " to " + eventEntry.getSw().getIp();
-                            try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
-                            }catch (Exception e1){
-                                e1.printStackTrace();
-                                System.out.println("Could not sent e mail");
-                            }
+
+                                //controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
+
                         }
                         if(result == null){
                             System.out.println("Result empty");
                             String text = "could not add " + eventEntry.getMonitor().getType() + " monitor to " + eventEntry.getSw().getIp();
-                            try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be added", text);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                                System.out.println("Could not sent e mail");
-                            }
+
+
                         }
                         else {
                             System.out.println(result.getStatusCode());
@@ -86,16 +79,9 @@ public class ServiceWorkerCommunicator extends Thread {
                         try {
                             result = restTemplate.postForEntity(uri, rmr, String.class);
                         } catch (Exception e) {
-                            e.printStackTrace();
                             System.out.println(e.getMessage());
                             System.out.println("Could not remove monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
                             String text = "could not remove " + eventEntry.getMonitor().getType() +" monitor with id " + eventEntry.getMonitor().getMon_id() + " to " + eventEntry.getSw().getIp();
-                            try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be removed", text);
-                            }catch (Exception e1){
-                                e1.printStackTrace();
-                                System.out.println("Could not sent e mail");
-                            }
                         }
                         if (result != null) {
                             System.out.println(result.getStatusCode());
@@ -115,24 +101,18 @@ public class ServiceWorkerCommunicator extends Thread {
                             System.out.println(e.getMessage());
                             System.out.println("Could not update monitor " + eventEntry.getMonitor().getMon_id() + " from service worker " + eventEntry.getSw().getIp());
                             String text = "could not update  " + eventEntry.getMonitor().getType() +" monitor with id " + eventEntry.getMonitor().getMon_id() + " to " + eventEntry.getSw().getIp();
-                            try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be updated", text);
-                            } catch (Exception e1) {
-                                e1.printStackTrace();
+
                                 System.out.println("Could not sent e mail");
-                            }
+
                         }
 
 
                         if (result != null) {
                             System.out.println(result.getStatusCode());
                             String text = "could not update  " + eventEntry.getMonitor().getType() +" monitor with id " + eventEntry.getMonitor().getMon_id() + " to " + eventEntry.getSw().getIp();
-                            try {
-                                controller.emailService.sendSimpleMessage("blackbird1397@gmail.com", "Monitor could not be updated", text);
-                            } catch (Exception e1) {
-                                e1.printStackTrace();
+
                                 System.out.println("Could not sent e mail");
-                            }
+
                         }
                     }
 

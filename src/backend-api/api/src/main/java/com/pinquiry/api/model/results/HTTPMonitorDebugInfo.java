@@ -20,7 +20,7 @@ public class HTTPMonitorDebugInfo {
     @MapKeyColumn(name = "http_response_header_key")
     private Map<String,String> responseHeaders;
 
-    @OneToOne(mappedBy = "debugInfo", cascade= CascadeType.ALL)
+    @OneToOne(mappedBy = "debugInfo", cascade = CascadeType.ALL)
     @JsonIgnore
     HTTPMonitorResult result;
 

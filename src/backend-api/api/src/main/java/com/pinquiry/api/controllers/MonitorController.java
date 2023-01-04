@@ -164,7 +164,8 @@ public class MonitorController {
     @GetMapping("/get-monitors")
     public ResponseEntity<?> getMonitors(@CookieValue(name = "jwt") String token,
                                          @RequestParam(name="page_size", defaultValue = "10") int pageSize,
-                                         @RequestParam(defaultValue = "0" , name = "page_no" ) int pageNo ){
+                                         @RequestParam(defaultValue = "0" , name = "page_no" ) int pageNo,
+                                         @RequestParam(defaultValue = "50", name = "x") int x){
 
         String username = null;
         try {
@@ -201,7 +202,7 @@ public class MonitorController {
             int a = monitorService.getIncidentCountInTimeSpan(lm.get(i).getId(), begin, end);
             umlrm.setIncidentCountLastHour(a);
 
-            List<TimestampResponseTime> ltrt =monitorService.findResponseTimesInTimeSpan(lm.get(i), begin, end);
+            List<TimestampResponseTime> ltrt =monitorService.findLastXResponses(lm.get(i), x);
             umlrm.setResponseTimes(ltrt);
 
             umlrm.setType(lm.get(i).getType().toString());

@@ -8,6 +8,9 @@ public class ServiceContentMonitorEndResultRequest extends ServiceMonitorResultR
     @JsonProperty("num_of_groups")
     private int numOfGroups;
 
+    @JsonProperty("status_code_success")
+    private boolean status_code_success;
+
     private List<List<ServiceContentMonitorResultRequest>> groups;
 
 
@@ -30,5 +33,13 @@ public class ServiceContentMonitorEndResultRequest extends ServiceMonitorResultR
 
     public void setGroups(List<List<ServiceContentMonitorResultRequest>> groups) {
         this.groups = groups;
+    }
+
+    public boolean isStatus_code_success() {
+        return status_code_success;
+    }
+
+    public void setStatus_code_success(boolean status_code_success) {
+        this.status_code_success = status_code_success;
     }
 }

@@ -133,6 +133,7 @@ public class ServiceWorkerController {
                      swrm.setRequestHeaders(hm.getRequestHeaders());
                      swrm.setResponseHeaders(hm.getResponseHeaders());
                      swrm.setSuccessCodes(hm.getSuccessCodes());
+                     swrm.setSearchString(hm.getSearchString());
                      lsmr.add(swrm);
                 }
 
