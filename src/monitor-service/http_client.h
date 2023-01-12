@@ -9,6 +9,7 @@
 #include <map>
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
+#define CPPHTTPLIB_USE_POLL
 #include "include/httplib.h"
 #include <queue>
 

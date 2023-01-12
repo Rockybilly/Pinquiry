@@ -15,6 +15,7 @@ HttpClient::HttpClient(const std::string &server, int timeout_ms) : server_name(
     if (client == nullptr){
         client = std::make_unique<httplib::Client>(server);
         client->set_ca_cert_path(cert_location);
+        client->set_connection_timeout(0, timeout_ms * 1000 * 2);
         client->set_read_timeout(0, timeout_ms * 1000);
         client->set_keep_alive(true);
     }

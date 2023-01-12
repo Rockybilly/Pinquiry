@@ -21,8 +21,8 @@ BackendReceiver::BackendReceiver(std::string ip,
         std::cout << "MonID: " << mon.mon_id << "Error st:" << error_st << std::endl;
 
         if (error_st.empty()){
-            //auto error_st_handler = add_monitor_handler(mon);
-            std::string error_st_handler;
+            auto error_st_handler = add_monitor_handler(mon);
+
             if (error_st_handler.empty()){
                 res.status = 200;
             }

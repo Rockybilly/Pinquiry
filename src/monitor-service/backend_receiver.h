@@ -6,6 +6,8 @@
 #define PINQUIRY_BACKEND_RECEIVER_H
 
 #include <string>
+#define CPPHTTPLIB_USE_POLL
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "include/httplib.h"
 #include "monitor_object.h"
 #include <thread>
